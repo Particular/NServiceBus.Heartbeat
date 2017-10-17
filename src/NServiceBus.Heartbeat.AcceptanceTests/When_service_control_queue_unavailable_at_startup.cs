@@ -1,5 +1,6 @@
 ﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
 {
+    using System.Linq;
     using System.Threading.Tasks;
     using NServiceBus;
     using NServiceBus.AcceptanceTesting;
@@ -22,13 +23,14 @@
                 .Run();
 
             Assert.IsFalse(testContext.CriticalExceptionReceived);
+            Assert.IsTrue(testContext.Logs.Any(x => x.Message.Contains("Unable to register endpoint startup with ServiceControl.")));
         }
 
         class EndpointWithMissingSCQueue : EndpointConfigurationBuilder
         {
             public EndpointWithMissingSCQueue()
             {
-                EndpointSetup<DefaultServer>(c => c.HeartbeatPlugin("invalidSCQueue"));
+                EndpointSetup<DefaultServer>(c => c.SendHeartbeatTo("invalidSCQueue"));
             }
         }
 

@@ -2,6 +2,7 @@
 {
     using System;
     using Configuration.AdvanceExtensibility;
+    using Heartbeat;
 
     /// <summary>
     /// Plugin extension methods.
@@ -15,16 +16,17 @@
         /// <param name="serviceControlQueue">ServiceControl queue address.</param>
         /// <param name="frequency">The frequency to send heartbeats.</param>
         /// <param name="timeToLive">The maximum time to live for the heartbeat.</param>
-        public static void HeartbeatPlugin(this EndpointConfiguration config, string serviceControlQueue, TimeSpan? frequency = null, TimeSpan? timeToLive = null)
+        public static void SendHeartbeatTo(this EndpointConfiguration config, string serviceControlQueue, TimeSpan? frequency = null, TimeSpan? timeToLive = null)
         {
-            config.GetSettings().Set("ServiceControl.Queue", serviceControlQueue);
+            config.EnableFeature<HeartbeatsFeature>();
+            config.GetSettings().Set("NServiceBus.Heartbeat.Queue", serviceControlQueue);
             if (timeToLive.HasValue)
             {
-                config.GetSettings().Set("ServiceControl.Heartbeat.Ttl", timeToLive.Value);
+                config.GetSettings().Set("NServiceBus.Heartbeat.Ttl", timeToLive.Value);
             }
             if (frequency.HasValue)
             {
-                config.GetSettings().Set("ServiceControl.Heartbeat.Interval", frequency.Value);
+                config.GetSettings().Set("NServiceBus.Heartbeat.Interval", frequency.Value);
             }
         }
     }

@@ -11,6 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NServiceBus" Version="6.0.0" />
-    <ProjectReference Include="..\ServiceControl.Plugin.Nsb6.Heartbeat\ServiceControl.Plugin.Nsb6.Heartbeat.csproj" />
+    <ProjectReference Include="..\NServiceBus.Heartbeat\NServiceBus.Heartbeat.csproj" />
   </ItemGroup>
 </Project>

@@ -2,11 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Configuration;
     using System.Text;
     using ApprovalTests;
     using ApprovalTests.Reporters;
-    using NServiceBus.Settings;
     using NUnit.Framework;
     using Plugin.Heartbeat.Messages;
 
@@ -17,14 +15,10 @@
         [Test]
         public void It_can_serialize_EndpointHeartbeat()
         {
-            ConfigurationManager.AppSettings["ServiceControl/Queue"] = "SC";
-            var settingsHolder = new SettingsHolder();
-            var backend = new ServiceControlBackend(null, settingsHolder);
-
-            var body = backend.Serialize(new EndpointHeartbeat
+            var body = ServiceControlBackend.Serialize(new EndpointHeartbeat
             {
                 EndpointName = "My.Endpoint",
-                ExecutedAt = new DateTime(2016, 02, 01, 13, 59, 0),
+                ExecutedAt = new DateTime(2016, 02, 01, 13, 59, 0, DateTimeKind.Utc),
                 Host = "Host",
                 HostId = Guid.Empty
             });
@@ -34,11 +28,7 @@
         [Test]
         public void It_can_serialize_RegisterEndpointStartup()
         {
-            ConfigurationManager.AppSettings["ServiceControl/Queue"] = "SC";
-            var settingsHolder = new SettingsHolder();
-            var backend = new ServiceControlBackend(null, settingsHolder);
-
-            var body = backend.Serialize(new RegisterEndpointStartup
+            var body = ServiceControlBackend.Serialize(new RegisterEndpointStartup
             {
                 HostDisplayName = "Display name :-)",
                 Endpoint = "My.Endpoint",
@@ -47,7 +37,7 @@
                     {"key1", "value1"},
                     {"key2", "value2"}
                 },
-                StartedAt = new DateTime(2016, 02, 01, 13, 59, 0),
+                StartedAt = new DateTime(2016, 02, 01, 13, 59, 0, DateTimeKind.Utc),
                 Host = "Host",
                 HostId = Guid.Empty
             });

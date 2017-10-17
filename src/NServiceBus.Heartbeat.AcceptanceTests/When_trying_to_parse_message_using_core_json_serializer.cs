@@ -6,9 +6,12 @@
     using NServiceBus.AcceptanceTests.EndpointTemplates;
     using NUnit.Framework;
     using Plugin.Heartbeat.Messages;
+    using Conventions = NServiceBus.AcceptanceTesting.Customization.Conventions;
 
     public class When_trying_to_parse_message_using_core_json_serializer
     {
+        static string EndpointName => Conventions.EndpointNamingConvention(typeof(HeartbeatEndpoint));
+
         [Test]
         public async Task Should_not_fail()
         {
@@ -25,8 +28,6 @@
             Assert.AreEqual(EndpointName, testContext.HeartbeatMessage.EndpointName);
         }
 
-        const string EndpointName = "Heartbeat.Nsb6.HeartbeatEndpoint";
-
         class HeartbeatEndpoint : EndpointConfigurationBuilder
         {
             public HeartbeatEndpoint()
@@ -34,12 +35,11 @@
                 EndpointSetup<DefaultServer>(c =>
                 {
                     c.AddDeserializer<JsonSerializer>();
-                    c.HeartbeatPlugin(EndpointName);
+                    c.SendHeartbeatTo(EndpointName);
                 });
 
                 IncludeType<EndpointHeartbeat>();
                 IncludeType<RegisterEndpointStartup>();
-                CustomEndpointName(EndpointName);
             }
 
             public class RegisterHandler : IHandleMessages<RegisterEndpointStartup>

@@ -11,16 +11,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputPath>..\..\binaries\</OutputPath>
     <NoWarn>CS1591</NoWarn>
-    <UpdateAssemblyInfo>true</UpdateAssemblyInfo>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="..\..\packaging\nuget\servicecontrol.plugin.Nsb6.heartbeat.nuspec" Link="servicecontrol.plugin.Nsb6.heartbeat.nuspec" />
     <PackageReference Include="NServiceBus" Version="6.0.0" />
-    <PackageReference Include="GitVersionTask" Version="4.0.0-beta0012" />
-    <PackageReference Include="NuGetPackager" Version="0.6.3" />
-    <PackageReference Include="Obsolete.Fody" Version="4.2.2" />
-    <PackageReference Include="Janitor.Fody" Version="1.4.1" />
-    <PackageReference Include="Fody" Version="2.1.0" />
-    <Reference Include="System.Configuration" />
   </ItemGroup>
 </Project>
