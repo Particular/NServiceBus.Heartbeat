@@ -1,0 +1,1 @@
+﻿{"Endpoint":"My.Endpoint","Host":"Host","HostDisplayName":"Display name :-)","HostId":"00000000-0000-0000-0000-000000000000","HostProperties":{"key1":"value1","key2":"value2"},"StartedAt":"2016-02-01T13:59:00.0000000"}

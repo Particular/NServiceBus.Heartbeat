@@ -1,3 +1,2 @@
-# NServiceBus.Heartbeat
-
-The NSB v6 endpoint plugin that provides endpoint health information to Service Control.
+# ServiceControl.Plugin.Nsb6.SagaAudit
+Enables audit of saga state changes for NServiceBus version 6.x endpoints to facilitate the SagaView state change diagram in ServiceInsight.
