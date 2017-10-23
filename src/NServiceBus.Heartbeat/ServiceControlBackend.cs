@@ -1,17 +1,15 @@
-﻿namespace ServiceControl.Plugin
+﻿namespace NServiceBus.Heartbeat
 {
     using System;
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
-    using NServiceBus;
-    using NServiceBus.DeliveryConstraints;
-    using NServiceBus.Extensibility;
-    using NServiceBus.Performance.TimeToBeReceived;
-    using NServiceBus.Routing;
-    using NServiceBus.SagaAudit;
-    using NServiceBus.Transport;
+    using DeliveryConstraints;
+    using Extensibility;
+    using Performance.TimeToBeReceived;
+    using Routing;
     using SimpleJson;
+    using Transport;
 
     class ServiceControlBackend
     {

@@ -6,7 +6,6 @@
     using Features;
     using Hosting;
     using Logging;
-    using ServiceControl.Plugin;
     using ServiceControl.Plugin.Heartbeat.Messages;
     using ServiceControl.Plugin.Nsb6.Heartbeat;
     using Transport;

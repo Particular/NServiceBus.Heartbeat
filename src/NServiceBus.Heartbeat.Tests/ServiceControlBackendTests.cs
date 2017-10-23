@@ -5,6 +5,7 @@
     using System.Text;
     using ApprovalTests;
     using ApprovalTests.Reporters;
+    using NServiceBus.Heartbeat;
     using NUnit.Framework;
     using Plugin.Heartbeat.Messages;
 

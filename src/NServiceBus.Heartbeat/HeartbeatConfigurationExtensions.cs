@@ -7,7 +7,7 @@
     /// <summary>
     /// Plugin extension methods.
     /// </summary>
-    public static class HeartbeatPluginExtensions
+    public static class HeartbeatConfigurationExtensions
     {
         /// <summary>
         /// Sets the ServiceControl queue address.

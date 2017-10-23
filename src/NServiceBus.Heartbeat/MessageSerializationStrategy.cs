@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.SagaAudit
+﻿namespace NServiceBus.Heartbeat
 {
     using System;
     using System.Collections.Generic;

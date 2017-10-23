@@ -3,7 +3,6 @@
     using System;
     using Features;
     using Hosting;
-    using ServiceControl.Plugin;
     using Transport;
 
     class HeartbeatsFeature : Feature
