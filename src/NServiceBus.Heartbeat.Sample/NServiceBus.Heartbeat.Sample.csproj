@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net45</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="6.0.0" />
+    <PackageReference Include="NServiceBus" Version="5.0.0" />
     <ProjectReference Include="..\NServiceBus.Heartbeat\NServiceBus.Heartbeat.csproj" />
   </ItemGroup>
 </Project>

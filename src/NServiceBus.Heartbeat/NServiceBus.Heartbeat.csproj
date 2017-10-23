@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net45</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>$(SolutionDir)NServiceBus.snk</AssemblyOriginatorKeyFile>
     <OutputPath>..\..\binaries\</OutputPath>
@@ -9,7 +9,7 @@
     <Description>Allows heartbeat monitoring of NServiceBus endpoints</Description>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="6.0.0" />
+    <PackageReference Include="NServiceBus" Version="5.0.0" />
     <PackageReference Include="Particular.Packaging" Version="0.1.0" PrivateAssets="All" />
     <PackageReference Include="Particular.CodeRules" Version="*" PrivateAssets="All" />
   </ItemGroup>
