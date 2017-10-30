@@ -2,18 +2,18 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Runtime.CompilerServices;
     using System.Text;
-    using ApprovalTests;
-    using ApprovalTests.Reporters;
     using NServiceBus.Heartbeat;
+    using NServiceBus.SagaAudit.Tests;
     using NUnit.Framework;
     using Plugin.Heartbeat.Messages;
 
     [TestFixture]
-    [UseReporter(typeof(DiffReporter))]
     public class ServiceControlBackendTests
     {
         [Test]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void It_can_serialize_EndpointHeartbeat()
         {
             var body = ServiceControlBackend.Serialize(new EndpointHeartbeat
@@ -23,10 +23,11 @@
                 Host = "Host",
                 HostId = Guid.Empty
             });
-            Approvals.Verify(Encoding.UTF8.GetString(body));
+            TestApprover.Verify(Encoding.UTF8.GetString(body));
         }
 
         [Test]
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void It_can_serialize_RegisterEndpointStartup()
         {
             var body = ServiceControlBackend.Serialize(new RegisterEndpointStartup
@@ -42,7 +43,7 @@
                 Host = "Host",
                 HostId = Guid.Empty
             });
-            Approvals.Verify(Encoding.UTF8.GetString(body));
+            TestApprover.Verify(Encoding.UTF8.GetString(body));
         }
     }
 }

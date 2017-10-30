@@ -34,7 +34,6 @@
             {
                 EndpointSetup<DefaultServer>(c =>
                 {
-                    c.AddDeserializer<JsonSerializer>();
                     c.SendHeartbeatTo(EndpointName);
                 });
 
