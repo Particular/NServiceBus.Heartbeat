@@ -1,16 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\Particular.Packaging.props" />
+
   <PropertyGroup>
-    <TargetFramework>net452</TargetFramework>
+    <TargetFramework>net45</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>$(SolutionDir)NServiceBus.snk</AssemblyOriginatorKeyFile>
     <OutputPath>..\..\binaries\</OutputPath>
   </PropertyGroup>
+
   <PropertyGroup>
     <Description>Allows heartbeat monitoring of NServiceBus endpoints</Description>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="6.0.0" />
-    <PackageReference Include="Particular.Packaging" Version="0.1.0" PrivateAssets="All" />
+    <PackageReference Include="NServiceBus" Version="[5.0.0, 6)" />
     <PackageReference Include="Particular.CodeRules" Version="*" PrivateAssets="All" />
+    <PackageReference Include="GitVersionTask" Version="4.0.0-beta0012" PrivateAssets="All" />
   </ItemGroup>
+
+  <Import Project="..\Particular.Packaging.targets" />
+
 </Project>

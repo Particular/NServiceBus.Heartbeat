@@ -1,28 +1,19 @@
 ﻿using System;
-using System.Threading.Tasks;
 using NServiceBus;
 
-class Program
+public class Program
 {
-    static void Main()
+    public static void Main()
     {
-        AsyncMain().GetAwaiter().GetResult();
-    }
+        var busConfiguration = new BusConfiguration();
 
-    static async Task AsyncMain()
-    {
-        Console.Title = "Heartbeat.Sample";
-        var endpointConfiguration = new EndpointConfiguration("Heartbeat.Sample");
-        endpointConfiguration.UseSerialization<JsonSerializer>();
-        endpointConfiguration.UsePersistence<InMemoryPersistence>();
-        endpointConfiguration.SendFailedMessagesTo("error");
-        endpointConfiguration.SendHeartbeatTo("Particular.ServiceControl");
+        busConfiguration.UsePersistence<InMemoryPersistence>();
+        busConfiguration.SendHeartbeatTo("Particular.ServiceControl");
 
-        var endpointInstance = await Endpoint.Start(endpointConfiguration)
-            .ConfigureAwait(false);
-        Console.WriteLine("Press any key to exit");
-        Console.ReadKey();
-        await endpointInstance.Stop()
-            .ConfigureAwait(false);
+        using (Bus.CreateSendOnly(busConfiguration))
+        {
+            Console.Out.WriteLine("Press a key to quit bus");
+            Console.ReadKey();
+        }
     }
 }
