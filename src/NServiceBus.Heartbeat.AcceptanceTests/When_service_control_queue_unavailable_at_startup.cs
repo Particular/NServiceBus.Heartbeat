@@ -1,5 +1,6 @@
 ﻿namespace ServiceControl.Plugin.Nsb6.Heartbeat.AcceptanceTests
 {
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using NServiceBus;
@@ -30,7 +31,7 @@
         {
             public EndpointWithMissingSCQueue()
             {
-                EndpointSetup<DefaultServer>(c => c.SendHeartbeatTo("invalidSCQueue"));
+                EndpointSetup<DefaultServer>(c => c.SendHeartbeatTo(new string(Path.GetInvalidPathChars())));
             }
         }
 

@@ -6,9 +6,7 @@
     using AcceptanceTesting.Customization;
     using AcceptanceTesting.Support;
     using Config.ConfigurationSource;
-    using Configuration.AdvanceExtensibility;
     using Features;
-    using Serialization;
 
     public class DefaultServer : IEndpointSetupTemplate
     {
@@ -21,42 +19,37 @@
         {
             this.typesToInclude = typesToInclude;
         }
-
+#pragma warning disable CS0618
         public async Task<EndpointConfiguration> GetConfiguration(RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointConfiguration, IConfigurationSource configSource, Action<EndpointConfiguration> configurationBuilderCustomization)
+#pragma warning restore CS0618
         {
-            var settings = runDescriptor.Settings;
-
             var types = endpointConfiguration.GetTypesScopedByTestClass();
 
             typesToInclude.AddRange(types);
 
-            var builder = new EndpointConfiguration(endpointConfiguration.EndpointName);
+            var configuration = new EndpointConfiguration(endpointConfiguration.EndpointName);
 
-            builder.TypesToIncludeInScan(typesToInclude);
-            builder.CustomConfigurationSource(configSource);
-            builder.EnableInstallers();
+            configuration.TypesToIncludeInScan(typesToInclude);
+            configuration.EnableInstallers();
 
-            builder.DisableFeature<TimeoutManager>();
-            builder.Recoverability().Delayed(cfg => cfg.NumberOfRetries(0));
-            builder.Recoverability().Immediate(cfg => cfg.NumberOfRetries(0));
+            configuration.DisableFeature<TimeoutManager>();
+            configuration.CustomConfigurationSource(configSource);
 
-            await builder.DefineTransport(settings, endpointConfiguration.EndpointName).ConfigureAwait(false);
-            builder.UseSerialization<JsonSerializer>();
+            var recoverability = configuration.Recoverability();
+            recoverability.Delayed(delayed => delayed.NumberOfRetries(0));
+            recoverability.Immediate(immediate => immediate.NumberOfRetries(0));
+            configuration.SendFailedMessagesTo("error");
+            configuration.UseSerialization<JsonSerializer>();
 
-            builder.DefineBuilder(settings);
-            builder.RegisterComponentsAndInheritanceHierarchy(runDescriptor);
+            await configuration.DefineTransport(runDescriptor, endpointConfiguration).ConfigureAwait(false);
 
-            Type serializerType;
-            if (settings.TryGet("Serializer", out serializerType))
-            {
-                builder.UseSerialization((SerializationDefinition) Activator.CreateInstance(serializerType));
-            }
-            await builder.DefinePersistence(settings, endpointConfiguration.EndpointName).ConfigureAwait(false);
+            configuration.RegisterComponentsAndInheritanceHierarchy(runDescriptor);
 
-            builder.GetSettings().SetDefault("ScaleOut.UseSingleBrokerQueue", true);
-            configurationBuilderCustomization(builder);
+            await configuration.DefinePersistence(runDescriptor, endpointConfiguration).ConfigureAwait(false);
 
-            return builder;
+            configurationBuilderCustomization(configuration);
+
+            return configuration;
         }
 
         List<Type> typesToInclude;

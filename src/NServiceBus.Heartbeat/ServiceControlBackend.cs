@@ -32,11 +32,17 @@
 
         Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IDispatchMessages dispatcher)
         {
-            var headers = new Dictionary<string, string>();
-            headers[Headers.EnclosedMessageTypes] = messageType;
-            headers[Headers.ContentType] = ContentTypes.Json;
-            headers[Headers.ReplyToAddress] = localAddress;
-            headers[Headers.MessageIntent] = sendIntent;
+            var headers = new Dictionary<string, string>
+            {
+                [Headers.EnclosedMessageTypes] = messageType,
+                [Headers.ContentType] = ContentTypes.Json,
+                [Headers.MessageIntent] = sendIntent
+            };
+
+            if (localAddress != null)
+            {
+                headers[Headers.ReplyToAddress] = localAddress;
+            }
 
             var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
             var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(destinationQueue), deliveryConstraints: new List<DeliveryConstraint>
