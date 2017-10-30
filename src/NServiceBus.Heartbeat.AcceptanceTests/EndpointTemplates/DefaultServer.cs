@@ -41,6 +41,7 @@
             builder.Recoverability().Immediate(cfg => cfg.NumberOfRetries(0));
 
             await builder.DefineTransport(settings, endpointConfiguration.EndpointName).ConfigureAwait(false);
+            builder.UseSerialization<JsonSerializer>();
 
             builder.DefineBuilder(settings);
             builder.RegisterComponentsAndInheritanceHierarchy(runDescriptor);
