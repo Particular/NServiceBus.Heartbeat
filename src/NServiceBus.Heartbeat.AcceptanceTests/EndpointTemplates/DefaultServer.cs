@@ -4,13 +4,12 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using AcceptanceTesting;
     using AcceptanceTesting.Support;
+    using Config.ConfigurationSource;
+    using Configuration.AdvanceExtensibility;
     using Hosting.Helpers;
     using Logging;
-    using NServiceBus;
-    using AcceptanceTesting;
-    using NServiceBus.Config.ConfigurationSource;
-    using NServiceBus.Configuration.AdvanceExtensibility;
 
     public class DefaultServer : IEndpointSetupTemplate
     {
