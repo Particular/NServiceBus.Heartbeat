@@ -7,10 +7,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <Description>Allows heartbeat monitoring of NServiceBus endpoints</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="NServiceBus" Version="5.0.0" />
-    <PackageReference Include="Particular.Packaging" Version="0.1.0" PrivateAssets="All" />
     <PackageReference Include="Particular.CodeRules" Version="*" PrivateAssets="All" />
+    <PackageReference Include="GitVersionTask" Version="4.0.0-beta0012" PrivateAssets="All" />
   </ItemGroup>
 </Project>
