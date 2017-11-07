@@ -58,7 +58,12 @@
 
         static IEnumerable<Type> GetTypesScopedByTestClass(EndpointConfiguration endpointConfiguration)
         {
-            var assemblies = new AssemblyScanner().GetScannableAssemblies();
+            var scanner = new AssemblyScanner
+            {
+                ThrowExceptions = true
+            };
+
+            var assemblies = scanner.GetScannableAssemblies();
 
             var types = assemblies.Assemblies
                 //exclude all test types by default
