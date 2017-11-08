@@ -1,36 +1,35 @@
 ﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
     using AcceptanceTesting;
-    using Configuration.AdvanceExtensibility;
+    using AcceptanceTesting.Customization;
+    using Config;
     using NServiceBus.AcceptanceTests;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
     using NUnit.Framework;
-    using Performance.TimeToBeReceived;
-    using Transport;
+    using Satellites;
+    using Transports;
 
     public class When_setting_explicit_ttl : NServiceBusAcceptanceTest
     {
+        static string DetectorAddress => Conventions.EndpointNamingConvention(typeof(Sender)) + ".Detector";
+
         [Test]
-        public async Task Should_use_it_for_check_messages()
+        public void Should_use_it_for_check_messages()
         {
-            var context = await Scenario.Define<Context>()
-                .WithEndpoint<Sender>(c => c.CustomConfig((cfg, ctx) => cfg.GetSettings().Set("InMemQueue", ctx.Queue)))
-                .Done(c => c.Queue.Count > 0)
+            var result = Scenario.Define<Context>()
+                .WithEndpoint<Sender>()
+                .Done(c => c.DetectedMessage != null)
                 .Run();
 
-            var message = context.Queue.Dequeue();
-
-            var constraint = message.UnicastTransportOperations.First().DeliveryConstraints.OfType<DiscardIfNotReceivedBefore>().First();
-            Assert.AreEqual(TimeSpan.FromSeconds(20), constraint.MaxTime);
+            //We can't have an exact assertion because TTBR on received message show only the remaining value, not the original one
+            Assert.Less(TimeSpan.FromSeconds(15), result.DetectedMessage.TimeToBeReceived);
+            Assert.Greater(TimeSpan.FromSeconds(25), result.DetectedMessage.TimeToBeReceived);
         }
 
         class Context : ScenarioContext
         {
-            public Queue<TransportOperations> Queue { get; } = new Queue<TransportOperations>();
+            public TransportMessage DetectedMessage { get; set; }
         }
 
         class Sender : EndpointConfigurationBuilder
@@ -39,10 +38,37 @@
             {
                 EndpointSetup<DefaultServer>(c =>
                 {
-                    c.SendHeartbeatTo("ServiceControl", TimeSpan.FromSeconds(6), TimeSpan.FromSeconds(20));
-                    c.UseTransport<InMemoryTransport>();
-                    c.SendOnly();
+                    c.SendHeartbeatTo(DetectorAddress, TimeSpan.FromSeconds(6), TimeSpan.FromSeconds(20));
                 });
+            }
+
+            class Detector : ISatellite, IWantToRunWhenConfigurationIsComplete
+            {
+                public Context Context { get; set; }
+
+                public bool Handle(TransportMessage message)
+                {
+                    Context.DetectedMessage = message;
+                    return true;
+                }
+
+                public void Start()
+                {
+                }
+
+                public void Stop()
+                {
+                }
+
+                public Address InputAddress => Address.Parse(DetectorAddress);
+
+                public bool Disabled => false;
+
+                public void Run(Configure config)
+                {
+                    var queueCreator = config.Builder.Build<ICreateQueues>();
+                    queueCreator.CreateQueueIfNecessary(InputAddress, null);
+                }
             }
         }
     }
