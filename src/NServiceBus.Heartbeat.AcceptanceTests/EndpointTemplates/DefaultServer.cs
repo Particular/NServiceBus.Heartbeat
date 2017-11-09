@@ -60,7 +60,7 @@
         {
             var scanner = new AssemblyScanner
             {
-                ThrowExceptions = true
+                ThrowExceptions = false
             };
 
             var assemblies = scanner.GetScannableAssemblies();
