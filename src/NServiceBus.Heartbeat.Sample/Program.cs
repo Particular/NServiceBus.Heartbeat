@@ -1,18 +1,20 @@
 ﻿using System;
 using NServiceBus;
 
-public class Program
+class Program
 {
-    public static void Main()
+    static void Main()
     {
+	    Console.Title = "NServiceBus.Heartbeat.Sample";
         var busConfiguration = new BusConfiguration();
+        busConfiguration.EndpointName("NServiceBus.Heartbeat.Sample");
 
         busConfiguration.UsePersistence<InMemoryPersistence>();
         busConfiguration.SendHeartbeatTo("Particular.ServiceControl");
 
         using (Bus.CreateSendOnly(busConfiguration))
         {
-            Console.Out.WriteLine("Press a key to quit bus");
+            Console.WriteLine("Press any key to exit");
             Console.ReadKey();
         }
     }
