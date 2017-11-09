@@ -1,4 +1,4 @@
-﻿namespace NServiceBus.SagaAudit.Tests
+﻿namespace NServiceBus.Heartbeat.Tests
 {
     using System.IO;
     using ApprovalTests;

@@ -5,7 +5,7 @@
     using System.Runtime.CompilerServices;
     using System.Text;
     using NServiceBus.Heartbeat;
-    using NServiceBus.SagaAudit.Tests;
+    using NServiceBus.Heartbeat.Tests;
     using NUnit.Framework;
     using Plugin.Heartbeat.Messages;
 
