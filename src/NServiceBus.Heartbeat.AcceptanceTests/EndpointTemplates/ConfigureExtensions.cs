@@ -2,7 +2,7 @@
 {
     using System.Threading.Tasks;
     using AcceptanceTesting.Support;
-    using Configuration.AdvanceExtensibility;
+    using Configuration.AdvancedExtensibility;
     using ObjectBuilder;
     using Transport;
 

@@ -2,7 +2,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using NServiceBus;
-using NServiceBus.Persistence;
 using NUnit.Framework;
 
 public class ConfigureEndpointLearningPersistence
