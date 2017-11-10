@@ -1,20 +1,20 @@
 ﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
-    using NServiceBus;
+    using System.Threading.Tasks;
     using AcceptanceTesting;
+    using AcceptanceTesting.Customization;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
     using NUnit.Framework;
     using ServiceControl.Plugin.Heartbeat.Messages;
-    using Conventions = AcceptanceTesting.Customization.Conventions;
 
     public class When_trying_to_parse_message_using_core_json_serializer
     {
         static string EndpointName => Conventions.EndpointNamingConvention(typeof(HeartbeatEndpoint));
 
         [Test]
-        public void Should_not_fail()
+        public async Task Should_not_fail()
         {
-            var testContext = Scenario.Define<Context>()
+            var testContext = await Scenario.Define<Context>()
                 .WithEndpoint<HeartbeatEndpoint>()
                 .Done(c => c.RegisterMessage != null && c.HeartbeatMessage != null)
                 .Run();
@@ -44,9 +44,10 @@
             {
                 public Context Context { get; set; }
 
-                public void Handle(RegisterEndpointStartup message)
+                public Task Handle(RegisterEndpointStartup message, IMessageHandlerContext context)
                 {
                     Context.RegisterMessage = message;
+                    return Task.FromResult(0);
                 }
             }
 
@@ -54,9 +55,10 @@
             {
                 public Context Context { get; set; }
 
-                public void Handle(EndpointHeartbeat message)
+                public Task Handle(EndpointHeartbeat message, IMessageHandlerContext context)
                 {
                     Context.HeartbeatMessage = message;
+                    return Task.FromResult(0);
                 }
             }
         }

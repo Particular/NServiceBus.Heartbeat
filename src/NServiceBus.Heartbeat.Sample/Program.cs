@@ -1,21 +1,28 @@
 ﻿using System;
+using System.Threading.Tasks;
 using NServiceBus;
 
 class Program
 {
     static void Main()
     {
-	    Console.Title = "NServiceBus.Heartbeat.Sample";
-        var busConfiguration = new BusConfiguration();
-        busConfiguration.EndpointName("NServiceBus.Heartbeat.Sample");
+        AsyncMain().GetAwaiter().GetResult();
+    }
 
-        busConfiguration.UsePersistence<InMemoryPersistence>();
-        busConfiguration.SendHeartbeatTo("Particular.ServiceControl");
+    static async Task AsyncMain()
+    {
+        Console.Title = "NServiceBus.Heartbeat.Sample";
+        var endpointConfiguration = new EndpointConfiguration("NServiceBus.Heartbeat.Sample");
+        endpointConfiguration.UseSerialization<JsonSerializer>();
+        endpointConfiguration.UsePersistence<InMemoryPersistence>();
+        endpointConfiguration.SendFailedMessagesTo("error");
+        endpointConfiguration.SendHeartbeatTo("Particular.ServiceControl");
 
-        using (Bus.CreateSendOnly(busConfiguration))
-        {
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
-        }
+        var endpointInstance = await Endpoint.Start(endpointConfiguration)
+            .ConfigureAwait(false);
+        Console.WriteLine("Press any key to exit");
+        Console.ReadKey();
+        await endpointInstance.Stop()
+            .ConfigureAwait(false);
     }
 }
