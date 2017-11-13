@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <Description>Allows heartbeat monitoring of NServiceBus endpoints</Description>
+    <Description>Send heartbeat monitoring messages from NServiceBus endpoints</Description>
   </PropertyGroup>
 
   <ItemGroup>
