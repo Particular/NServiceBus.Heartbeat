@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using NServiceBus;
     using AcceptanceTesting;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
@@ -13,9 +14,9 @@
         static string EndpointName => Conventions.EndpointNamingConvention(typeof(FakeServiceControl));
 
         [Test]
-        public void Should_not_include_reply_to_header()
+        public async Task Should_not_include_reply_to_header()
         {
-            var testContext = Scenario.Define<Context>()
+            var testContext = await Scenario.Define<Context>()
                 .WithEndpoint<HeartbeatEndpoint>()
                 .WithEndpoint<FakeServiceControl>()
                 .Done(c => c.RegisterMessage != null)
@@ -28,7 +29,7 @@
         class Context : ScenarioContext
         {
             public RegisterEndpointStartup RegisterMessage { get; set; }
-            public IDictionary<string, string> Headers { get; set; }
+            public IReadOnlyDictionary<string, string> Headers { get; set; }
         }
 
         class HeartbeatEndpoint : EndpointConfigurationBuilder
@@ -38,7 +39,8 @@
                 EndpointSetup<DefaultServer>(c =>
                 {
                     c.SendHeartbeatTo(EndpointName);
-                }).SendOnly();
+                    c.SendOnly();
+                });
 
                 IncludeType<EndpointHeartbeat>();
                 IncludeType<RegisterEndpointStartup>();
@@ -58,12 +60,12 @@
             public class RegisterHandler : IHandleMessages<RegisterEndpointStartup>
             {
                 public Context Context { get; set; }
-                public IBus Bus { get; set; }
 
-                public void Handle(RegisterEndpointStartup message)
+                public Task Handle(RegisterEndpointStartup message, IMessageHandlerContext context)
                 {
-                    Context.Headers = Bus.CurrentMessageContext.Headers;
+                    Context.Headers = context.MessageHeaders;
                     Context.RegisterMessage = message;
+                    return Task.FromResult(0);
                 }
             }
 
@@ -71,8 +73,9 @@
             {
                 public Context Context { get; set; }
 
-                public void Handle(EndpointHeartbeat message)
+                public Task Handle(EndpointHeartbeat message, IMessageHandlerContext context)
                 {
+                    return Task.FromResult(0);
                 }
             }
         }

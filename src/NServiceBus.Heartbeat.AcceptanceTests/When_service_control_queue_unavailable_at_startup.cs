@@ -1,5 +1,8 @@
 ﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
+    using System.IO;
+    using System.Linq;
+    using System.Threading.Tasks;
     using AcceptanceTesting;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
     using NUnit.Framework;
@@ -7,27 +10,27 @@
     public class When_service_control_queue_unavailable_at_startup
     {
         [Test]
-        public void Should_not_fail_the_endpoint()
+        public async Task Should_not_fail_the_endpoint()
         {
-            var testContext = new Context();
-            Scenario.Define(testContext)
+            var testContext = await Scenario.Define<Context>()
                 .WithEndpoint<EndpointWithMissingSCQueue>(b => b
-                    .CustomConfig(busConfig => busConfig
-                        .DefineCriticalErrorAction((m, e) =>
+                    .CustomConfig((busConfig, context) => busConfig
+                        .DefineCriticalErrorAction(c =>
                         {
-                            testContext.CriticalExceptionReceived = true;
+                            context.CriticalExceptionReceived = true;
+                            return Task.FromResult(0);
                         })))
-                .AllowExceptions()
                 .Run();
 
             Assert.IsFalse(testContext.CriticalExceptionReceived);
+            Assert.IsTrue(testContext.Logs.Any(x => x.Message.Contains("Unable to register endpoint startup with ServiceControl.")));
         }
 
         class EndpointWithMissingSCQueue : EndpointConfigurationBuilder
         {
             public EndpointWithMissingSCQueue()
             {
-                EndpointSetup<DefaultServer>(c => c.SendHeartbeatTo("invalidSCQueue"));
+                EndpointSetup<DefaultServer>(c => c.SendHeartbeatTo(new string(Path.GetInvalidPathChars())));
             }
         }
 
