@@ -4,5 +4,4 @@ branches:
   develop:
     tag: beta
   release:
-    tag: RC
-
+    tag: rc
