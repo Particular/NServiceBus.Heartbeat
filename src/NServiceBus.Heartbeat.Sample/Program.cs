@@ -13,8 +13,8 @@ class Program
     {
         Console.Title = "NServiceBus.Heartbeat.Sample";
         var endpointConfiguration = new EndpointConfiguration("NServiceBus.Heartbeat.Sample");
-        endpointConfiguration.UseSerialization<JsonSerializer>();
-        endpointConfiguration.UsePersistence<InMemoryPersistence>();
+        endpointConfiguration.UseSerialization<NewtonsoftSerializer>();
+        endpointConfiguration.UseTransport<LearningTransport>();
         endpointConfiguration.SendFailedMessagesTo("error");
         endpointConfiguration.SendHeartbeatTo("Particular.ServiceControl");
 
