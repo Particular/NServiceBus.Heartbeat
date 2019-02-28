@@ -1,17 +1,15 @@
-﻿using System.Runtime.CompilerServices;
-using NServiceBus.Heartbeat;
-using NServiceBus.Heartbeat.Tests;
+﻿using NServiceBus.Heartbeat;
 using NUnit.Framework;
+using Particular.Approvals;
 using PublicApiGenerator;
 
 [TestFixture]
 public class APIApprovals
 {
     [Test]
-    [MethodImpl(MethodImplOptions.NoInlining)]
     public void Approve()
     {
         var publicApi = ApiGenerator.GeneratePublicApi(typeof(HeartbeatSender).Assembly, excludeAttributes: new[] { "System.Runtime.Versioning.TargetFrameworkAttribute" });
-        TestApprover.Verify(publicApi);
+        Approver.Verify(publicApi);
     }
 }

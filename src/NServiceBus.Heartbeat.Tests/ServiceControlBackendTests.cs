@@ -2,18 +2,16 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Runtime.CompilerServices;
     using System.Text;
     using NServiceBus.Heartbeat;
-    using NServiceBus.Heartbeat.Tests;
     using NUnit.Framework;
+    using Particular.Approvals;
     using Plugin.Heartbeat.Messages;
 
     [TestFixture]
     public class ServiceControlBackendTests
     {
         [Test]
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public void It_can_serialize_EndpointHeartbeat()
         {
             var body = ServiceControlBackend.Serialize(new EndpointHeartbeat
@@ -23,11 +21,10 @@
                 Host = "Host",
                 HostId = Guid.Empty
             });
-            TestApprover.Verify(Encoding.UTF8.GetString(body));
+            Approver.Verify(Encoding.UTF8.GetString(body));
         }
 
         [Test]
-        [MethodImpl(MethodImplOptions.NoInlining)]
         public void It_can_serialize_RegisterEndpointStartup()
         {
             var body = ServiceControlBackend.Serialize(new RegisterEndpointStartup
@@ -43,7 +40,7 @@
                 Host = "Host",
                 HostId = Guid.Empty
             });
-            TestApprover.Verify(Encoding.UTF8.GetString(body));
+            Approver.Verify(Encoding.UTF8.GetString(body));
         }
     }
 }
