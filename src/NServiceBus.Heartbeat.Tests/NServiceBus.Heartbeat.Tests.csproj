@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NServiceBus" Version="7.4.0" />
+    <PackageReference Include="NServiceBus" Version="8.0.0-PullRequest5719.566" />
   </ItemGroup>
 
   <ItemGroup>
