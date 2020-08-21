@@ -4,6 +4,7 @@
     using Features;
     using Hosting;
     using Transport;
+    using Microsoft.Extensions.DependencyInjection;
 
     class HeartbeatsFeature : Feature
     {
@@ -25,7 +26,7 @@
             var destinationQueue = context.Settings.Get<string>("NServiceBus.Heartbeat.Queue");
             var backend = new ServiceControlBackend(destinationQueue, replyToAddress);
 
-            context.RegisterStartupTask(b => new HeartbeatSender(b.Build<IDispatchMessages>(), b.Build<HostInformation>(),
+            context.RegisterStartupTask(b => new HeartbeatSender(b.GetService<IDispatchMessages>(), b.GetService<HostInformation>(),
                 backend, context.Settings.EndpointName(), interval, ttl));
         }
     }
