@@ -26,7 +26,7 @@
             var destinationQueue = context.Settings.Get<string>("NServiceBus.Heartbeat.Queue");
             var backend = new ServiceControlBackend(destinationQueue, replyToAddress);
 
-            context.RegisterStartupTask(b => new HeartbeatSender(b.GetService<IDispatchMessages>(), b.GetService<HostInformation>(),
+            context.RegisterStartupTask(b => new HeartbeatSender(b.GetRequiredService<IDispatchMessages>(), b.GetRequiredService<HostInformation>(),
                 backend, context.Settings.EndpointName(), interval, ttl));
         }
     }
