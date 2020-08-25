@@ -42,22 +42,30 @@
 
             public class RegisterHandler : IHandleMessages<RegisterEndpointStartup>
             {
-                public Context Context { get; set; }
+                private readonly Context scenarioContext;
+                public RegisterHandler(Context scenarioContext)
+                {
+                    this.scenarioContext = scenarioContext;
+                }
 
                 public Task Handle(RegisterEndpointStartup message, IMessageHandlerContext context)
                 {
-                    Context.RegisterMessage = message;
+                    scenarioContext.RegisterMessage = message;
                     return Task.FromResult(0);
                 }
             }
 
             public class HeartbeatHandler : IHandleMessages<EndpointHeartbeat>
             {
-                public Context Context { get; set; }
+                private readonly Context scenarioContext;
+                public HeartbeatHandler(Context scenarioContext)
+                {
+                    this.scenarioContext = scenarioContext;
+                }
 
                 public Task Handle(EndpointHeartbeat message, IMessageHandlerContext context)
                 {
-                    Context.HeartbeatMessage = message;
+                    scenarioContext.HeartbeatMessage = message;
                     return Task.FromResult(0);
                 }
             }
