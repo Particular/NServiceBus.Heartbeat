@@ -3,7 +3,7 @@
     using System.Threading.Tasks;
     using AcceptanceTesting.Support;
     using Configuration.AdvancedExtensibility;
-    using ObjectBuilder;
+    using Microsoft.Extensions.DependencyInjection;
     using Transport;
 
     public static class ConfigureExtensions
@@ -31,12 +31,12 @@
             builder.RegisterComponents(r => { RegisterInheritanceHierarchyOfContextOnContainer(runDescriptor, r); });
         }
 
-        static void RegisterInheritanceHierarchyOfContextOnContainer(RunDescriptor runDescriptor, IConfigureComponents r)
+        static void RegisterInheritanceHierarchyOfContextOnContainer(RunDescriptor runDescriptor, IServiceCollection r)
         {
             var type = runDescriptor.ScenarioContext.GetType();
             while (type != typeof(object))
             {
-                r.RegisterSingleton(type, runDescriptor.ScenarioContext);
+                r.AddSingleton(type, runDescriptor.ScenarioContext);
                 type = type.BaseType;
             }
         }
