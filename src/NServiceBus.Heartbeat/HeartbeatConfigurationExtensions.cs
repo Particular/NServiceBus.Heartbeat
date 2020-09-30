@@ -12,7 +12,7 @@
         /// <summary>
         /// Sets the ServiceControl queue address.
         /// </summary>
-        /// <param name="config"></param>
+        /// <param name="config">The enddpoint congfiguration to modify.</param>
         /// <param name="serviceControlQueue">ServiceControl queue address.</param>
         /// <param name="frequency">The frequency to send heartbeats.</param>
         /// <param name="timeToLive">The maximum time to live for the heartbeat.</param>
