@@ -1,4 +1,6 @@
-﻿namespace NServiceBus.AcceptanceTests.EndpointTemplates
+﻿using NServiceBus.Heartbeat.AcceptanceTests;
+
+namespace NServiceBus.AcceptanceTests.EndpointTemplates
 {
     using System.Threading.Tasks;
     using AcceptanceTesting.Support;
@@ -21,7 +23,7 @@
 
         public static async Task DefinePersistence(this EndpointConfiguration config, RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointCustomizationConfiguration)
         {
-            var persistenceConfiguration = new ConfigureEndpointLearningPersistence();
+            var persistenceConfiguration = new ConfigureEndpointAcceptanceTestingPersistence();
             await persistenceConfiguration.Configure(config);
             runDescriptor.OnTestCompleted(_ => persistenceConfiguration.Cleanup());
         }
