@@ -51,7 +51,7 @@
             });
             return dispatcher.Dispatch(new TransportOperations(operation), new TransportTransaction(), new ContextBag());
         }
-        
+
         readonly string sendIntent = MessageIntentEnum.Send.ToString();
         string destinationQueue;
         string localAddress;

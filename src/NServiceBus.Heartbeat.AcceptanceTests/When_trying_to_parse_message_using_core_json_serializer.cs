@@ -42,7 +42,7 @@
 
             public class RegisterHandler : IHandleMessages<RegisterEndpointStartup>
             {
-                private readonly Context scenarioContext;
+                readonly Context scenarioContext;
                 public RegisterHandler(Context scenarioContext)
                 {
                     this.scenarioContext = scenarioContext;
@@ -57,7 +57,7 @@
 
             public class HeartbeatHandler : IHandleMessages<EndpointHeartbeat>
             {
-                private readonly Context scenarioContext;
+                readonly Context scenarioContext;
                 public HeartbeatHandler(Context scenarioContext)
                 {
                     this.scenarioContext = scenarioContext;
