@@ -1,8 +1,7 @@
-﻿using System.Threading.Tasks;
-using NServiceBus.AcceptanceTesting.Support;
-
-namespace NServiceBus.Heartbeat.AcceptanceTests
+﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
+    using System.Threading.Tasks;
+
     public class ConfigureEndpointAcceptanceTestingPersistence
     {
         public Task Configure(EndpointConfiguration configuration)

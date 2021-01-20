@@ -59,7 +59,7 @@
 
             public class RegisterHandler : IHandleMessages<RegisterEndpointStartup>
             {
-                private readonly Context scenarioContext;
+                readonly Context scenarioContext;
                 public RegisterHandler(Context scenarioContext)
                 {
                     this.scenarioContext = scenarioContext;

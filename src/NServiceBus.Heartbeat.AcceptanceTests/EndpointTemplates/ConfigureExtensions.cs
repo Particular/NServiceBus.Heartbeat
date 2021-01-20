@@ -1,12 +1,11 @@
-﻿using NServiceBus.Heartbeat.AcceptanceTests;
-
-namespace NServiceBus.AcceptanceTests.EndpointTemplates
+﻿namespace NServiceBus.AcceptanceTests.EndpointTemplates
 {
+    using NServiceBus.Heartbeat.AcceptanceTests;
     using System.Threading.Tasks;
-    using AcceptanceTesting.Support;
-    using Configuration.AdvancedExtensibility;
+    using NServiceBus.AcceptanceTesting.Support;
+    using NServiceBus.Configuration.AdvancedExtensibility;
     using Microsoft.Extensions.DependencyInjection;
-    using Transport;
+    using NServiceBus.Transport;
 
     public static class ConfigureExtensions
     {

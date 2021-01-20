@@ -50,7 +50,7 @@
         void NotifyEndpointStartup(DateTime startupTime)
         {
             // don't block here since StartupTasks are executed synchronously.
-            SendEndpointStartupMessage(startupTime, cancellationTokenSource.Token).Ignore();
+            _ = SendEndpointStartupMessage(startupTime, cancellationTokenSource.Token);
         }
 
         void StartHeartbeats()
