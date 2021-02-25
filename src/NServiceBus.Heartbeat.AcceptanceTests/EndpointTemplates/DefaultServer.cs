@@ -5,7 +5,6 @@
     using System.Threading.Tasks;
     using AcceptanceTesting.Customization;
     using AcceptanceTesting.Support;
-    using Features;
 
     public class DefaultServer : IEndpointSetupTemplate
     {
@@ -29,8 +28,6 @@
 
             configuration.TypesToIncludeInScan(typesToInclude);
             configuration.EnableInstallers();
-
-            configuration.DisableFeature<TimeoutManager>();
 
             var recoverability = configuration.Recoverability();
             recoverability.Delayed(delayed => delayed.NumberOfRetries(0));
