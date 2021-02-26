@@ -12,7 +12,7 @@
 
     class HeartbeatSender : FeatureStartupTask, IDisposable
     {
-        public HeartbeatSender(IDispatchMessages dispatcher, HostInformation hostInfo, ServiceControlBackend backend,
+        public HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo, ServiceControlBackend backend,
             string endpointName, TimeSpan interval, TimeSpan timeToLive)
         {
             this.dispatcher = dispatcher;
@@ -114,7 +114,7 @@
 
         bool resendRegistration = true;
         ServiceControlBackend backend;
-        IDispatchMessages dispatcher;
+        IMessageDispatcher dispatcher;
         CancellationTokenSource cancellationTokenSource;
         string endpointName;
         AsyncTimer heartbeatTimer;

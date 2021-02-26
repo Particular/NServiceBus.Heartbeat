@@ -41,5 +41,10 @@
                 type = type.BaseType;
             }
         }
+
+        public static TTransportDefinition ConfigureTransport<TTransportDefinition>(
+            this EndpointConfiguration configuration)
+            where TTransportDefinition : TransportDefinition =>
+            (TTransportDefinition)configuration.GetSettings().Get<TransportDefinition>();
     }
 }

@@ -4,8 +4,6 @@
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
-    using DeliveryConstraints;
-    using Extensibility;
     using Performance.TimeToBeReceived;
     using Routing;
     using SimpleJson;
@@ -19,7 +17,7 @@
             this.localAddress = localAddress;
         }
 
-        public Task Send(object messageToSend, TimeSpan timeToBeReceived, IDispatchMessages dispatcher)
+        public Task Send(object messageToSend, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher)
         {
             var body = Serialize(messageToSend);
             return Send(body, messageToSend.GetType().FullName, timeToBeReceived, dispatcher);
@@ -30,7 +28,7 @@
             return Encoding.UTF8.GetBytes(SimpleJson.SerializeObject(messageToSend, serializerStrategy));
         }
 
-        Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IDispatchMessages dispatcher)
+        Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher)
         {
             var headers = new Dictionary<string, string>
             {
@@ -45,11 +43,9 @@
             }
 
             var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
-            var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(destinationQueue), deliveryConstraints: new List<DeliveryConstraint>
-            {
-                new DiscardIfNotReceivedBefore(timeToBeReceived)
-            });
-            return dispatcher.Dispatch(new TransportOperations(operation), new TransportTransaction(), new ContextBag());
+            var properties = new DispatchProperties { DiscardIfNotReceivedBefore = new DiscardIfNotReceivedBefore(timeToBeReceived) };
+            var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(destinationQueue), properties);
+            return dispatcher.Dispatch(new TransportOperations(operation), new TransportTransaction());
         }
 
         readonly string sendIntent = MessageIntentEnum.Send.ToString();

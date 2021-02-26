@@ -1,84 +1,55 @@
 ﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using DelayedDelivery;
-    using Extensibility;
-    using Performance.TimeToBeReceived;
-    using Routing;
-    using Settings;
     using Transport;
 
     class InMemoryTransport : TransportDefinition
     {
-        public override TransportInfrastructure Initialize(SettingsHolder settings, string connectionString)
-        {
-            return new InMemTransportInfrastructure(settings);
-        }
-
-        public override string ExampleConnectionStringForErrorMessage => null;
-        public override bool RequiresConnectionString => false;
+        public Queue<TransportOperations> Queue { get; set; } = new Queue<TransportOperations>();
 
         class InMemTransportInfrastructure : TransportInfrastructure
         {
-            Queue<TransportOperations> queue;
+            InMemoryTransport transport;
 
-            public InMemTransportInfrastructure(SettingsHolder settings)
-            {
-                queue = settings.Get<Queue<TransportOperations>>("InMemQueue");
-            }
+            public InMemTransportInfrastructure(InMemoryTransport transport) => this.transport = transport;
 
-            public override TransportReceiveInfrastructure ConfigureReceiveInfrastructure()
-            {
-                throw new NotImplementedException("Only sending is supported");
-            }
+            public void Initialize() => Dispatcher = new InMemoryDispatcher(transport.Queue);
 
-            public override TransportSendInfrastructure ConfigureSendInfrastructure()
-            {
-                return new TransportSendInfrastructure(() => new Dispatcher(queue), () => Task.FromResult(StartupCheckResult.Success));
-            }
-
-            public override TransportSubscriptionInfrastructure ConfigureSubscriptionInfrastructure()
-            {
-                throw new NotImplementedException();
-            }
-
-            public override EndpointInstance BindToLocalEndpoint(EndpointInstance instance)
-            {
-                return instance;
-            }
-
-            public override string ToTransportAddress(LogicalAddress logicalAddress)
-            {
-                return logicalAddress.EndpointInstance.Endpoint;
-            }
-
-            public override IEnumerable<Type> DeliveryConstraints => new[]
-            {
-                typeof(DoNotDeliverBefore),
-                typeof(DelayDeliveryWith),
-                typeof(DiscardIfNotReceivedBefore)
-            };
-
-            public override TransportTransactionMode TransactionMode => TransportTransactionMode.None;
-            public override OutboundRoutingPolicy OutboundRoutingPolicy => new OutboundRoutingPolicy(OutboundRoutingType.Unicast, OutboundRoutingType.Unicast, OutboundRoutingType.Unicast);
-
-            class Dispatcher : IDispatchMessages
+            class InMemoryDispatcher : IMessageDispatcher
             {
                 Queue<TransportOperations> queue;
 
-                public Dispatcher(Queue<TransportOperations> queue)
-                {
-                    this.queue = queue;
-                }
+                public InMemoryDispatcher(Queue<TransportOperations> queue) => this.queue = queue;
 
-                public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, ContextBag context)
+                public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction)
                 {
                     queue.Enqueue(outgoingMessages);
                     return Task.FromResult(0);
                 }
             }
+
+            public override Task Shutdown() => Task.CompletedTask;
         }
+
+        public InMemoryTransport() : base(TransportTransactionMode.None, true, true, true)
+        {
+        }
+
+#pragma warning disable 1998
+        public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers,
+#pragma warning restore 1998
+            string[] sendingAddresses)
+        {
+            var infrastructure = new InMemTransportInfrastructure(this);
+            infrastructure.Initialize();
+
+            return infrastructure;
+        }
+
+        public override string ToTransportAddress(QueueAddress address) => address.BaseAddress;
+
+        public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() =>
+            new[] { TransportTransactionMode.None };
     }
 }
