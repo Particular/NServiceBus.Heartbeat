@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Performance.TimeToBeReceived;
     using Routing;
@@ -17,10 +18,10 @@
             this.localAddress = localAddress;
         }
 
-        public Task Send(object messageToSend, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher)
+        public Task Send(object messageToSend, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher, CancellationToken cancellationToken = default)
         {
             var body = Serialize(messageToSend);
-            return Send(body, messageToSend.GetType().FullName, timeToBeReceived, dispatcher);
+            return Send(body, messageToSend.GetType().FullName, timeToBeReceived, dispatcher, cancellationToken);
         }
 
         internal static byte[] Serialize(object messageToSend)
@@ -28,7 +29,7 @@
             return Encoding.UTF8.GetBytes(SimpleJson.SerializeObject(messageToSend, serializerStrategy));
         }
 
-        Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher)
+        Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher, CancellationToken cancellationToken)
         {
             var headers = new Dictionary<string, string>
             {
@@ -45,7 +46,7 @@
             var outgoingMessage = new OutgoingMessage(Guid.NewGuid().ToString(), headers, body);
             var properties = new DispatchProperties { DiscardIfNotReceivedBefore = new DiscardIfNotReceivedBefore(timeToBeReceived) };
             var operation = new TransportOperation(outgoingMessage, new UnicastAddressTag(destinationQueue), properties);
-            return dispatcher.Dispatch(new TransportOperations(operation), new TransportTransaction());
+            return dispatcher.Dispatch(new TransportOperations(operation), new TransportTransaction(), cancellationToken);
         }
 
         readonly string sendIntent = MessageIntentEnum.Send.ToString();

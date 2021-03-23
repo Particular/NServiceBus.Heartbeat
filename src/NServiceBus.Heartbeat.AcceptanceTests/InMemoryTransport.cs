@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
     using Transport;
 
@@ -22,14 +23,14 @@
 
                 public InMemoryDispatcher(Queue<TransportOperations> queue) => this.queue = queue;
 
-                public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction)
+                public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, CancellationToken cancellationToken)
                 {
                     queue.Enqueue(outgoingMessages);
                     return Task.FromResult(0);
                 }
             }
 
-            public override Task Shutdown() => Task.CompletedTask;
+            public override Task Shutdown(CancellationToken cancellationToken) => Task.CompletedTask;
         }
 
         public InMemoryTransport() : base(TransportTransactionMode.None, true, true, true)
@@ -39,7 +40,8 @@
 #pragma warning disable 1998
         public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers,
 #pragma warning restore 1998
-            string[] sendingAddresses)
+            string[] sendingAddresses,
+            CancellationToken cancellationToken)
         {
             var infrastructure = new InMemTransportInfrastructure(this);
             infrastructure.Initialize();
