@@ -27,7 +27,7 @@
             stopSendingHeartbeatsTokenSource?.Dispose();
         }
 
-        protected override Task OnStart(IMessageSession session, CancellationToken cancellationToken)
+        protected override Task OnStart(IMessageSession session, CancellationToken cancellationToken = default)
         {
             stopSendingHeartbeatsTokenSource = new CancellationTokenSource();
 
@@ -37,7 +37,7 @@
             return Task.FromResult(0);
         }
 
-        protected override Task OnStop(IMessageSession session, CancellationToken cancellationToken)
+        protected override Task OnStop(IMessageSession session, CancellationToken cancellationToken = default)
         {
             stopSendingHeartbeatsTokenSource?.Cancel();
 

@@ -23,14 +23,14 @@
 
                 public InMemoryDispatcher(Queue<TransportOperations> queue) => this.queue = queue;
 
-                public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, CancellationToken cancellationToken)
+                public Task Dispatch(TransportOperations outgoingMessages, TransportTransaction transaction, CancellationToken cancellationToken = default)
                 {
                     queue.Enqueue(outgoingMessages);
                     return Task.FromResult(0);
                 }
             }
 
-            public override Task Shutdown(CancellationToken cancellationToken) => Task.CompletedTask;
+            public override Task Shutdown(CancellationToken cancellationToken = default) => Task.CompletedTask;
         }
 
         public InMemoryTransport() : base(TransportTransactionMode.None, true, true, true)
@@ -41,7 +41,7 @@
         public override async Task<TransportInfrastructure> Initialize(HostSettings hostSettings, ReceiveSettings[] receivers,
 #pragma warning restore 1998
             string[] sendingAddresses,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken = default)
         {
             var infrastructure = new InMemTransportInfrastructure(this);
             infrastructure.Initialize();
