@@ -22,10 +22,8 @@
             this.hostInfo = hostInfo;
         }
 
-        public void Dispose()
-        {
+        public void Dispose() =>
             stopSendingHeartbeatsTokenSource?.Dispose();
-        }
 
         protected override Task OnStart(IMessageSession session, CancellationToken cancellationToken = default)
         {
@@ -34,21 +32,19 @@
             NotifyEndpointStartup(DateTime.UtcNow, cancellationToken);
             StartHeartbeats(cancellationToken);
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         protected override Task OnStop(IMessageSession session, CancellationToken cancellationToken = default)
         {
             stopSendingHeartbeatsTokenSource?.Cancel();
 
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
-        void NotifyEndpointStartup(DateTime startupTime, CancellationToken cancellationToken)
-        {
-            // don't block here since StartupTasks are executed synchronously.
+        // don't block here since StartupTasks are executed synchronously.
+        void NotifyEndpointStartup(DateTime startupTime, CancellationToken cancellationToken) =>
             _ = SendEndpointStartupMessage(startupTime, cancellationToken);
-        }
 
         void StartHeartbeats(CancellationToken cancellationToken)
         {
