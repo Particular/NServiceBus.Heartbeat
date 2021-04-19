@@ -30,7 +30,7 @@
             stopSendingHeartbeatsTokenSource = new CancellationTokenSource();
 
             // don't block here since StartupTasks are executed synchronously.
-            _ = SendEndpointStartupMessage(DateTime.UtcNow, cancellationToken);
+            _ = SendEndpointStartupMessage(DateTime.UtcNow, stopSendingHeartbeatsTokenSource.Token);
 
             Logger.Debug($"Start sending heartbeats every {heartbeatInterval}");
 
@@ -62,7 +62,7 @@
                         }
                     }
                 },
-                cancellationToken);
+                CancellationToken.None);
 
             return Task.CompletedTask;
         }
