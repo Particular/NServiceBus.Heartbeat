@@ -29,8 +29,40 @@
         {
             stopSendingHeartbeatsTokenSource = new CancellationTokenSource();
 
-            NotifyEndpointStartup(DateTime.UtcNow, cancellationToken);
-            StartHeartbeats(cancellationToken);
+            // don't block here since StartupTasks are executed synchronously.
+            _ = SendEndpointStartupMessage(DateTime.UtcNow, cancellationToken);
+
+            Logger.Debug($"Start sending heartbeats every {heartbeatInterval}");
+
+            _ = Task.Run(async () =>
+                {
+                    while (!stopSendingHeartbeatsTokenSource.IsCancellationRequested)
+                    {
+                        try
+                        {
+                            await Task.Delay(heartbeatInterval, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
+
+                            var message = new EndpointHeartbeat
+                            {
+                                ExecutedAt = DateTime.UtcNow,
+                                EndpointName = endpointName,
+                                Host = hostInfo.DisplayName,
+                                HostId = hostInfo.HostId
+                            };
+
+                            await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // no-op
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Warn("Unable to send heartbeat to ServiceControl.", ex);
+                        }
+                    }
+                },
+                cancellationToken);
 
             return Task.CompletedTask;
         }
@@ -40,44 +72,6 @@
             stopSendingHeartbeatsTokenSource?.Cancel();
 
             return Task.CompletedTask;
-        }
-
-        // don't block here since StartupTasks are executed synchronously.
-        void NotifyEndpointStartup(DateTime startupTime, CancellationToken cancellationToken) =>
-            _ = SendEndpointStartupMessage(startupTime, cancellationToken);
-
-        void StartHeartbeats(CancellationToken cancellationToken)
-        {
-            Logger.Debug($"Start sending heartbeats every {heartbeatInterval}");
-
-            _ = Task.Run(async () =>
-            {
-                while (!stopSendingHeartbeatsTokenSource.IsCancellationRequested)
-                {
-                    try
-                    {
-                        await Task.Delay(heartbeatInterval, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
-
-                        var message = new EndpointHeartbeat
-                        {
-                            ExecutedAt = DateTime.UtcNow,
-                            EndpointName = endpointName,
-                            Host = hostInfo.DisplayName,
-                            HostId = hostInfo.HostId
-                        };
-
-                        await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // no-op
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Warn("Unable to send heartbeat to ServiceControl.", ex);
-                    }
-                }
-            }, cancellationToken);
         }
 
         async Task SendEndpointStartupMessage(DateTime startupTime, CancellationToken cancellationToken)
