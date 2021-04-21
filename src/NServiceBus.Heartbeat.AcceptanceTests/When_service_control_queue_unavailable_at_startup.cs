@@ -15,10 +15,10 @@
             var testContext = await Scenario.Define<Context>()
                 .WithEndpoint<EndpointWithMissingSCQueue>(b => b
                     .CustomConfig((busConfig, context) => busConfig
-                        .DefineCriticalErrorAction(c =>
+                        .DefineCriticalErrorAction((_, __) =>
                         {
                             context.CriticalExceptionReceived = true;
-                            return Task.FromResult(0);
+                            return Task.CompletedTask;
                         })))
                 .Run();
 
