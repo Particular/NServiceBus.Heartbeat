@@ -52,9 +52,16 @@
 
                             await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
                         }
-                        catch (OperationCanceledException)
+                        catch (OperationCanceledException ex)
                         {
-                            // no-op
+                            if (stopSendingHeartbeatsTokenSource.IsCancellationRequested)
+                            {
+                                Logger.Debug("Heartbeat sending cancelled.", ex);
+                            }
+                            else
+                            {
+                                Logger.Warn("OperationCanceledException thrown.", ex);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -88,6 +95,17 @@
                     StartedAt = startupTime
                 };
                 await backend.Send(message, ttlTimeSpan, dispatcher, cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException ex)
+            {
+                if (stopSendingHeartbeatsTokenSource.IsCancellationRequested)
+                {
+                    Logger.Debug("Heartbeat sending cancelled.", ex);
+                }
+                else
+                {
+                    Logger.Warn("OperationCanceledException thrown.", ex);
+                }
             }
             catch (Exception ex)
             {
