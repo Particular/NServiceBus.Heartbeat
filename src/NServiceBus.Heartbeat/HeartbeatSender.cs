@@ -11,123 +11,110 @@
 
     class HeartbeatSender : FeatureStartupTask, IDisposable
     {
-        public HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo, ServiceControlBackend backend,
-            string endpointName, TimeSpan interval, TimeSpan timeToLive)
+        public HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo, ServiceControlBackend backend, string endpointName, TimeSpan interval, TimeSpan timeToLive)
         {
             this.dispatcher = dispatcher;
+            this.hostInfo = hostInfo;
             this.backend = backend;
             this.endpointName = endpointName;
-            heartbeatInterval = interval;
-            ttlTimeSpan = timeToLive;
-            this.hostInfo = hostInfo;
+            this.interval = interval;
+            this.timeToLive = timeToLive;
         }
 
-        public void Dispose() =>
-            stopSendingHeartbeatsTokenSource?.Dispose();
+        public void Dispose() => stopSendingTokenSource?.Dispose();
 
         protected override Task OnStart(IMessageSession session, CancellationToken cancellationToken = default)
         {
-            stopSendingHeartbeatsTokenSource = new CancellationTokenSource();
+            stopSendingTokenSource = new CancellationTokenSource();
 
             // don't block here since StartupTasks are executed synchronously.
-            _ = SendEndpointStartupMessageAndSwallowExceptions(DateTime.UtcNow, stopSendingHeartbeatsTokenSource.Token);
+            _ = SendEndpointStartupMessageAndSwallowExceptions(DateTime.UtcNow, default, true, stopSendingTokenSource.Token);
 
-            Logger.Debug($"Start sending heartbeats every {heartbeatInterval}");
-
-            _ = Task.Run(async () =>
-                {
-                    while (true)
-                    {
-                        try
-                        {
-                            await Task.Delay(heartbeatInterval, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
-
-                            var message = new EndpointHeartbeat
-                            {
-                                ExecutedAt = DateTime.UtcNow,
-                                EndpointName = endpointName,
-                                Host = hostInfo.DisplayName,
-                                HostId = hostInfo.HostId
-                            };
-
-                            await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
-                        }
-                        catch (OperationCanceledException ex) when (stopSendingHeartbeatsTokenSource.IsCancellationRequested)
-                        {
-                            Logger.Debug("Heartbeat sending canceled.", ex);
-                            break;
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Warn("Unable to send heartbeat to ServiceControl.", ex);
-                        }
-                    }
-                },
-                CancellationToken.None);
+            _ = SendHeartbeatsAndSwallowExceptions(stopSendingTokenSource.Token);
 
             return Task.CompletedTask;
+        }
+
+        async Task SendHeartbeatsAndSwallowExceptions(CancellationToken cancellationToken)
+        {
+            Logger.Debug($"Start sending heartbeats every {interval}");
+
+            while (true)
+            {
+                try
+                {
+                    await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
+
+                    var message = new EndpointHeartbeat { ExecutedAt = DateTime.UtcNow, EndpointName = endpointName, Host = hostInfo.DisplayName, HostId = hostInfo.HostId };
+
+                    await backend.Send(message, timeToLive, dispatcher, cancellationToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
+                {
+                    Logger.Debug("Heartbeat sending canceled.", ex);
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn("Unable to send heartbeat to ServiceControl.", ex);
+                }
+            }
         }
 
         protected override Task OnStop(IMessageSession session, CancellationToken cancellationToken = default)
         {
-            stopSendingHeartbeatsTokenSource?.Cancel();
+            stopSendingTokenSource?.Cancel();
 
             return Task.CompletedTask;
         }
 
-        async Task SendEndpointStartupMessageAndSwallowExceptions(DateTime startupTime, CancellationToken stopSendingHeartbeatsCancellationToken)
+        async Task SendEndpointStartupMessageAndSwallowExceptions(DateTime startupTime, TimeSpan delay, bool retry, CancellationToken cancellationToken)
         {
             try
             {
-                try
-                {
-                    var message = new RegisterEndpointStartup
-                    {
-                        HostId = hostInfo.HostId,
-                        Host = hostInfo.DisplayName,
-                        Endpoint = endpointName,
-                        HostDisplayName = hostInfo.DisplayName,
-                        HostProperties = hostInfo.Properties,
-                        StartedAt = startupTime
-                    };
-                    await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsCancellationToken).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException) when (stopSendingHeartbeatsCancellationToken.IsCancellationRequested)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    if (!resendRegistration)
-                    {
-                        Logger.Warn("Unable to register endpoint startup with ServiceControl.", ex);
-                        return;
-                    }
+                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
 
-                    resendRegistration = false;
+                var message = new RegisterEndpointStartup
+                {
+                    HostId = hostInfo.HostId,
+                    Host = hostInfo.DisplayName,
+                    Endpoint = endpointName,
+                    HostDisplayName = hostInfo.DisplayName,
+                    HostProperties = hostInfo.Properties,
+                    StartedAt = startupTime,
+                };
 
-                    Logger.Warn($"Unable to register endpoint startup with ServiceControl. Going to reattempt registration after {registrationRetryInterval}.", ex);
-
-                    await Task.Delay(registrationRetryInterval, stopSendingHeartbeatsCancellationToken).ConfigureAwait(false);
-                    await SendEndpointStartupMessageAndSwallowExceptions(startupTime, stopSendingHeartbeatsCancellationToken).ConfigureAwait(false);
-                }
+                await backend.Send(message, timeToLive, dispatcher, cancellationToken).ConfigureAwait(false);
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
                 Logger.Debug("Heartbeat sending canceled.", ex);
+                return;
+            }
+            catch (Exception ex)
+            {
+                if (retry)
+                {
+                    Logger.Warn($"Unable to register endpoint startup with ServiceControl. Going to reattempt registration after {registrationRetryInterval}.", ex);
+                    await SendEndpointStartupMessageAndSwallowExceptions(startupTime, registrationRetryInterval, false, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    Logger.Warn("Unable to register endpoint startup with ServiceControl.", ex);
+                }
             }
         }
 
-        bool resendRegistration = true;
-        ServiceControlBackend backend;
-        IMessageDispatcher dispatcher;
-        CancellationTokenSource stopSendingHeartbeatsTokenSource;
-        string endpointName;
-        TimeSpan ttlTimeSpan;
-        TimeSpan heartbeatInterval;
-        TimeSpan registrationRetryInterval = TimeSpan.FromMinutes(1);
-        HostInformation hostInfo;
+        CancellationTokenSource stopSendingTokenSource;
 
-        static ILog Logger = LogManager.GetLogger(typeof(HeartbeatSender));
+        readonly IMessageDispatcher dispatcher;
+        readonly HostInformation hostInfo;
+        readonly ServiceControlBackend backend;
+        readonly TimeSpan interval;
+        readonly TimeSpan timeToLive;
+        readonly string endpointName;
+
+        static readonly TimeSpan registrationRetryInterval = TimeSpan.FromMinutes(1);
+        static readonly ILog Logger = LogManager.GetLogger<HeartbeatSender>();
     }
 }
