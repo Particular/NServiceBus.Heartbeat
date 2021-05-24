@@ -54,22 +54,22 @@
 
                                 await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
                             }
-                            catch (Exception ex) when (!(ex is OperationCanceledException))
+#pragma warning disable PS0019 // Do not catch Exception without considering OperationCanceledException - considered in block
+                            catch (Exception ex)
+#pragma warning restore PS0019 // Do not catch Exception without considering OperationCanceledException
                             {
+                                if (ex is OperationCanceledException && stopSendingHeartbeatsTokenSource.IsCancellationRequested)
+                                {
+                                    throw;
+                                }
+
                                 Logger.Warn("Unable to send heartbeat to ServiceControl.", ex);
                             }
                         }
                     }
                     catch (OperationCanceledException ex)
                     {
-                        if (stopSendingHeartbeatsTokenSource.IsCancellationRequested)
-                        {
-                            Logger.Debug("Heartbeat sending canceled.", ex);
-                        }
-                        else
-                        {
-                            Logger.Warn("OperationCanceledException thrown.", ex);
-                        }
+                        Logger.Debug("Heartbeat sending canceled.", ex);
                     }
                 },
                 CancellationToken.None);
@@ -101,8 +101,15 @@
                     };
                     await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsCancellationToken).ConfigureAwait(false);
                 }
-                catch (Exception ex) when (!(ex is OperationCanceledException))
+#pragma warning disable PS0019 // Do not catch Exception without considering OperationCanceledException - considered in block
+                catch (Exception ex)
+#pragma warning restore PS0019 // Do not catch Exception without considering OperationCanceledException
                 {
+                    if (ex is OperationCanceledException && stopSendingHeartbeatsTokenSource.IsCancellationRequested)
+                    {
+                        throw;
+                    }
+
                     if (!resendRegistration)
                     {
                         Logger.Warn("Unable to register endpoint startup with ServiceControl.", ex);
@@ -119,14 +126,7 @@
             }
             catch (OperationCanceledException ex)
             {
-                if (stopSendingHeartbeatsTokenSource.IsCancellationRequested)
-                {
-                    Logger.Debug("Heartbeat sending canceled.", ex);
-                }
-                else
-                {
-                    Logger.Warn("OperationCanceledException thrown.", ex);
-                }
+                Logger.Debug("Heartbeat sending canceled.", ex);
             }
         }
 
