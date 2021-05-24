@@ -36,40 +36,31 @@
 
             _ = Task.Run(async () =>
                 {
-                    try
+                    while (true)
                     {
-                        while (true)
+                        try
                         {
-                            try
+                            await Task.Delay(heartbeatInterval, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
+
+                            var message = new EndpointHeartbeat
                             {
-                                await Task.Delay(heartbeatInterval, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
+                                ExecutedAt = DateTime.UtcNow,
+                                EndpointName = endpointName,
+                                Host = hostInfo.DisplayName,
+                                HostId = hostInfo.HostId
+                            };
 
-                                var message = new EndpointHeartbeat
-                                {
-                                    ExecutedAt = DateTime.UtcNow,
-                                    EndpointName = endpointName,
-                                    Host = hostInfo.DisplayName,
-                                    HostId = hostInfo.HostId
-                                };
-
-                                await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
-                            }
-#pragma warning disable PS0019 // Do not catch Exception without considering OperationCanceledException - considered in block
-                            catch (Exception ex)
-#pragma warning restore PS0019 // Do not catch Exception without considering OperationCanceledException
-                            {
-                                if (ex is OperationCanceledException && stopSendingHeartbeatsTokenSource.IsCancellationRequested)
-                                {
-                                    throw;
-                                }
-
-                                Logger.Warn("Unable to send heartbeat to ServiceControl.", ex);
-                            }
+                            await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsTokenSource.Token).ConfigureAwait(false);
                         }
-                    }
-                    catch (OperationCanceledException ex)
-                    {
-                        Logger.Debug("Heartbeat sending canceled.", ex);
+                        catch (OperationCanceledException ex) when (stopSendingHeartbeatsTokenSource.IsCancellationRequested)
+                        {
+                            Logger.Debug("Heartbeat sending canceled.", ex);
+                            break;
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Warn("Unable to send heartbeat to ServiceControl.", ex);
+                        }
                     }
                 },
                 CancellationToken.None);
@@ -101,15 +92,12 @@
                     };
                     await backend.Send(message, ttlTimeSpan, dispatcher, stopSendingHeartbeatsCancellationToken).ConfigureAwait(false);
                 }
-#pragma warning disable PS0019 // Do not catch Exception without considering OperationCanceledException - considered in block
-                catch (Exception ex)
-#pragma warning restore PS0019 // Do not catch Exception without considering OperationCanceledException
+                catch (OperationCanceledException) when (stopSendingHeartbeatsCancellationToken.IsCancellationRequested)
                 {
-                    if (ex is OperationCanceledException && stopSendingHeartbeatsTokenSource.IsCancellationRequested)
-                    {
-                        throw;
-                    }
-
+                    throw;
+                }
+                catch (Exception ex)
+                {
                     if (!resendRegistration)
                     {
                         Logger.Warn("Unable to register endpoint startup with ServiceControl.", ex);
