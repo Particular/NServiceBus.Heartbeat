@@ -39,7 +39,7 @@
         {
             Logger.Debug($"Start sending heartbeats every {interval}");
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
@@ -51,7 +51,8 @@
                 }
                 catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
                 {
-                    Logger.Debug("Heartbeat sending canceled.", ex);
+                    // private token, sender is being stopped, log the exception in case the stack trace is ever needed for debugging
+                    Logger.Debug("Operation canceled while stopping heartbeat sending.", ex);
                     break;
                 }
                 catch (Exception ex)
@@ -88,7 +89,8 @@
             }
             catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
             {
-                Logger.Debug("Heartbeat sending canceled.", ex);
+                // private token, check is being stopped, log the exception in case the stack trace is ever needed for debugging
+                Logger.Debug("Operation canceled while stopping heartbeat sending.", ex);
                 return;
             }
             catch (Exception ex)
