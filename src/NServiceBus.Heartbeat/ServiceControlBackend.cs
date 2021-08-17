@@ -49,7 +49,7 @@
             return dispatcher.Dispatch(new TransportOperations(operation), new TransportTransaction(), cancellationToken);
         }
 
-        readonly string sendIntent = MessageIntentEnum.Send.ToString();
+        readonly string sendIntent = MessageIntent.Send.ToString();
         string destinationQueue;
         string localAddress;
 
