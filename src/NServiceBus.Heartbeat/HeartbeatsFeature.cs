@@ -19,15 +19,21 @@
                 ttl = TimeSpan.FromTicks(interval.Ticks * 4);
             }
 
-            var replyToAddress = !context.Settings.GetOrDefault<bool>("Endpoint.SendOnly")
-                ? context.Settings.LocalAddress()
-                : null;
-
             var destinationQueue = context.Settings.Get<string>("NServiceBus.Heartbeat.Queue");
-            var backend = new ServiceControlBackend(destinationQueue, replyToAddress);
 
-            context.RegisterStartupTask(b => new HeartbeatSender(b.GetRequiredService<IMessageDispatcher>(), b.GetRequiredService<HostInformation>(),
-                backend, context.Settings.EndpointName(), interval, ttl));
+            context.RegisterStartupTask(b =>
+            {
+                // Uses GetService because ReceiveAddresses is not registered on send-only endpoint.
+                var backend = new ServiceControlBackend(destinationQueue, b.GetService<ReceiveAddresses>());
+
+                return new HeartbeatSender(
+                    b.GetRequiredService<IMessageDispatcher>(),
+                    b.GetRequiredService<HostInformation>(),
+                    backend,
+                    context.Settings.EndpointName(),
+                    interval,
+                    ttl);
+            });
         }
     }
 }
