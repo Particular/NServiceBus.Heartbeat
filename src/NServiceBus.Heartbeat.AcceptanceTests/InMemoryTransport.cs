@@ -1,5 +1,6 @@
 ﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -31,6 +32,9 @@
             }
 
             public override Task Shutdown(CancellationToken cancellationToken = default) => Task.CompletedTask;
+#pragma warning disable CS0618
+            public override string ToTransportAddress(QueueAddress address) => transport.ToTransportAddress(address);
+#pragma warning restore CS0618
         }
 
         public InMemoryTransport() : base(TransportTransactionMode.None, true, true, true)
@@ -49,6 +53,7 @@
             return infrastructure;
         }
 
+        [Obsolete("Inject the ITransportAddressResolver type to access the address translation mechanism at runtime. See the NServiceBus version 8 upgrade guide for further details. Will be treated as an error from version 9.0.0. Will be removed in version 10.0.0.", false)]
         public override string ToTransportAddress(QueueAddress address) => address.BaseAddress;
 
         public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() =>
