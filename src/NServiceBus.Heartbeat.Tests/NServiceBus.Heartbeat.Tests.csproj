@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="GitHubActionsTestLogger" Version="1.4.1" />
-    <PackageReference Include="NServiceBus" Version="8.0.0-beta.1" />
+    <PackageReference Include="NServiceBus" Version="8.0.0-beta.2" />
   </ItemGroup>
 
   <ItemGroup>
