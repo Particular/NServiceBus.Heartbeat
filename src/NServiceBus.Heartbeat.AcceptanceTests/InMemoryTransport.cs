@@ -1,6 +1,5 @@
 ﻿namespace NServiceBus.Heartbeat.AcceptanceTests
 {
-    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -50,11 +49,6 @@
             return Task.FromResult<TransportInfrastructure>(infrastructure);
         }
 
-
-        public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() =>
-            new[] { TransportTransactionMode.None };
-
-        [Obsolete("Inject the ITransportAddressResolver type to access the address translation mechanism at runtime. See the NServiceBus version 8 upgrade guide for further details.")]
-        public override string ToTransportAddress(QueueAddress address) => throw new NotImplementedException();
+        public override IReadOnlyCollection<TransportTransactionMode> GetSupportedTransactionModes() => new[] { TransportTransactionMode.None };
     }
 }
