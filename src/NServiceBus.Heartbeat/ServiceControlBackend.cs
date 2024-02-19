@@ -23,10 +23,7 @@
             return Send(body, messageToSend.GetType().FullName, timeToBeReceived, dispatcher, cancellationToken);
         }
 
-        internal static byte[] Serialize(object messageToSend)
-        {
-            return JsonSerializer.SerializeToUtf8Bytes(messageToSend);
-        }
+        internal static byte[] Serialize(object messageToSend) => JsonSerializer.SerializeToUtf8Bytes(messageToSend);
 
         Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher, CancellationToken cancellationToken)
         {
@@ -49,7 +46,7 @@
         }
 
         readonly string sendIntent = MessageIntent.Send.ToString();
-        string destinationQueue;
+        readonly string destinationQueue;
         readonly ReceiveAddresses receiveAddresses; // note that ReceiveAddresses will be null on send-only endpoints
     }
 }

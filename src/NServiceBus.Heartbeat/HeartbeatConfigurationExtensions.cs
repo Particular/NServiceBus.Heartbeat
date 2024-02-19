@@ -12,16 +12,17 @@
         /// <summary>
         /// Sets the ServiceControl queue address.
         /// </summary>
-        /// <param name="config">The enddpoint congfiguration to modify.</param>
+        /// <param name="config">The endpoint configuration to modify.</param>
         /// <param name="serviceControlQueue">ServiceControl queue address.</param>
         /// <param name="frequency">The frequency to send heartbeats.</param>
         /// <param name="timeToLive">The maximum time to live for the heartbeat.</param>
         public static void SendHeartbeatTo(this EndpointConfiguration config, string serviceControlQueue, TimeSpan? frequency = null, TimeSpan? timeToLive = null)
         {
             ArgumentNullException.ThrowIfNull(config);
-            ArgumentException.ThrowIfNullOrEmpty(serviceControlQueue);
+            ArgumentException.ThrowIfNullOrWhiteSpace(serviceControlQueue);
 
             config.GetSettings().Set("NServiceBus.Heartbeat.Queue", serviceControlQueue);
+
             if (frequency.HasValue)
             {
                 ArgumentOutOfRangeException.ThrowIfLessThan(frequency.Value, TimeSpan.Zero);
