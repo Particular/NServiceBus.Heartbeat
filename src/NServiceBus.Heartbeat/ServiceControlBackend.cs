@@ -2,12 +2,11 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
+    using System.Text.Json;
     using System.Threading;
     using System.Threading.Tasks;
     using Performance.TimeToBeReceived;
     using Routing;
-    using SimpleJson;
     using Transport;
 
     class ServiceControlBackend
@@ -26,7 +25,7 @@
 
         internal static byte[] Serialize(object messageToSend)
         {
-            return Encoding.UTF8.GetBytes(SimpleJson.SerializeObject(messageToSend, serializerStrategy));
+            return JsonSerializer.SerializeToUtf8Bytes(messageToSend);
         }
 
         Task Send(byte[] body, string messageType, TimeSpan timeToBeReceived, IMessageDispatcher dispatcher, CancellationToken cancellationToken)
@@ -52,7 +51,5 @@
         readonly string sendIntent = MessageIntent.Send.ToString();
         string destinationQueue;
         readonly ReceiveAddresses receiveAddresses; // note that ReceiveAddresses will be null on send-only endpoints
-
-        static IJsonSerializerStrategy serializerStrategy = new MessageSerializationStrategy();
     }
 }
