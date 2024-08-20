@@ -21,7 +21,7 @@
 
             Assert.NotNull(testContext.RegisterMessage);
             Assert.AreEqual(EndpointName, testContext.RegisterMessage.Endpoint);
-            Assert.IsTrue(testContext.RegisterMessage.HostProperties.ContainsKey("Machine"));
+            Assert.That(testContext.RegisterMessage.HostProperties.ContainsKey("Machine"), Is.True);
 
             Assert.NotNull(testContext.HeartbeatMessage);
             Assert.AreEqual(EndpointName, testContext.HeartbeatMessage.EndpointName);
