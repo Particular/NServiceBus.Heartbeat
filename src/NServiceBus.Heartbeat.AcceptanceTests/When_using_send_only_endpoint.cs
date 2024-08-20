@@ -22,7 +22,7 @@
                 .Done(c => c.RegisterMessage != null)
                 .Run();
 
-            Assert.NotNull(testContext.RegisterMessage);
+            Assert.That(testContext.RegisterMessage, Is.Not.Null);
             Assert.That(testContext.Headers.ContainsKey(Headers.ReplyToAddress), Is.False);
         }
 

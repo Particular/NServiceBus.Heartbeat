@@ -19,11 +19,11 @@
                 .Done(c => c.RegisterMessage != null && c.HeartbeatMessage != null)
                 .Run();
 
-            Assert.NotNull(testContext.RegisterMessage);
+            Assert.That(testContext.RegisterMessage, Is.Not.Null);
             Assert.That(testContext.RegisterMessage.Endpoint, Is.EqualTo(EndpointName));
             Assert.That(testContext.RegisterMessage.HostProperties.ContainsKey("Machine"), Is.True);
 
-            Assert.NotNull(testContext.HeartbeatMessage);
+            Assert.That(testContext.HeartbeatMessage, Is.Not.Null);
             Assert.That(testContext.HeartbeatMessage.EndpointName, Is.EqualTo(EndpointName));
         }
 
