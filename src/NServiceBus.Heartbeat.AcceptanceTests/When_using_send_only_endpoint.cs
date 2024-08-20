@@ -23,7 +23,7 @@
                 .Run();
 
             Assert.NotNull(testContext.RegisterMessage);
-            Assert.False(testContext.Headers.ContainsKey(Headers.ReplyToAddress));
+            Assert.That(testContext.Headers.ContainsKey(Headers.ReplyToAddress), Is.False);
         }
 
         class Context : ScenarioContext
