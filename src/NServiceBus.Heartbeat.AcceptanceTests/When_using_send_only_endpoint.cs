@@ -22,8 +22,11 @@
                 .Done(c => c.RegisterMessage != null)
                 .Run();
 
-            Assert.That(testContext.RegisterMessage, Is.Not.Null);
-            Assert.That(testContext.Headers.ContainsKey(Headers.ReplyToAddress), Is.False);
+            Assert.Multiple(() =>
+            {
+                Assert.That(testContext.RegisterMessage, Is.Not.Null);
+                Assert.That(testContext.Headers.ContainsKey(Headers.ReplyToAddress), Is.False);
+            });
         }
 
         class Context : ScenarioContext

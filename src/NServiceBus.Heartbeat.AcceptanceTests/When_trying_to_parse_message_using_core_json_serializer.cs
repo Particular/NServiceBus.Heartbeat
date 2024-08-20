@@ -20,10 +20,13 @@
                 .Run();
 
             Assert.That(testContext.RegisterMessage, Is.Not.Null);
-            Assert.That(testContext.RegisterMessage.Endpoint, Is.EqualTo(EndpointName));
-            Assert.That(testContext.RegisterMessage.HostProperties.ContainsKey("Machine"), Is.True);
+            Assert.Multiple(() =>
+            {
+                Assert.That(testContext.RegisterMessage.Endpoint, Is.EqualTo(EndpointName));
+                Assert.That(testContext.RegisterMessage.HostProperties.ContainsKey("Machine"), Is.True);
 
-            Assert.That(testContext.HeartbeatMessage, Is.Not.Null);
+                Assert.That(testContext.HeartbeatMessage, Is.Not.Null);
+            });
             Assert.That(testContext.HeartbeatMessage.EndpointName, Is.EqualTo(EndpointName));
         }
 
