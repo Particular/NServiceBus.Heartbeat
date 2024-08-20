@@ -20,11 +20,11 @@
                 .Run();
 
             Assert.NotNull(testContext.RegisterMessage);
-            Assert.AreEqual(EndpointName, testContext.RegisterMessage.Endpoint);
+            Assert.That(testContext.RegisterMessage.Endpoint, Is.EqualTo(EndpointName));
             Assert.That(testContext.RegisterMessage.HostProperties.ContainsKey("Machine"), Is.True);
 
             Assert.NotNull(testContext.HeartbeatMessage);
-            Assert.AreEqual(EndpointName, testContext.HeartbeatMessage.EndpointName);
+            Assert.That(testContext.HeartbeatMessage.EndpointName, Is.EqualTo(EndpointName));
         }
 
         class HeartbeatEndpoint : EndpointConfigurationBuilder
