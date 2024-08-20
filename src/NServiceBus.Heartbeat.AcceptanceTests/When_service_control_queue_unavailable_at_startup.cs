@@ -22,8 +22,11 @@
                         })))
                 .Run();
 
-            Assert.IsFalse(testContext.CriticalExceptionReceived);
-            Assert.IsTrue(testContext.Logs.Any(x => x.Message.Contains("Unable to register endpoint startup with ServiceControl.")));
+            Assert.Multiple(() =>
+            {
+                Assert.That(testContext.CriticalExceptionReceived, Is.False);
+                Assert.That(testContext.Logs.Any(x => x.Message.Contains("Unable to register endpoint startup with ServiceControl.")), Is.True);
+            });
         }
 
         class EndpointWithMissingSCQueue : EndpointConfigurationBuilder
