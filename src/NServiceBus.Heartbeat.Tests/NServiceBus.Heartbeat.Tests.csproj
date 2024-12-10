@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <PackageReference Include="GitHubActionsTestLogger" Version="2.3.3" />
-    <PackageReference Include="NServiceBus" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
