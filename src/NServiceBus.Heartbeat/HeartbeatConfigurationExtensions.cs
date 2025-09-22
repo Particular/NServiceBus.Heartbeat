@@ -21,18 +21,25 @@
             ArgumentNullException.ThrowIfNull(config);
             ArgumentException.ThrowIfNullOrWhiteSpace(serviceControlQueue);
 
-            config.GetSettings().Set("NServiceBus.Heartbeat.Queue", serviceControlQueue);
+            var settings = config.GetSettings();
+
+            settings.Set("NServiceBus.Heartbeat.Queue", serviceControlQueue);
 
             if (frequency.HasValue)
             {
                 ArgumentOutOfRangeException.ThrowIfLessThan(frequency.Value, TimeSpan.Zero);
-                config.GetSettings().Set("NServiceBus.Heartbeat.Interval", frequency.Value);
+                settings.Set("NServiceBus.Heartbeat.Interval", frequency.Value);
             }
 
             if (timeToLive.HasValue)
             {
                 ArgumentOutOfRangeException.ThrowIfLessThan(timeToLive.Value, TimeSpan.Zero);
-                config.GetSettings().Set("NServiceBus.Heartbeat.Ttl", timeToLive.Value);
+                settings.Set("NServiceBus.Heartbeat.Ttl", timeToLive.Value);
+            }
+
+            if (settings.TryGet<ManifestItems>(out var manifest))
+            {
+                manifest.Add("heartbeatsQueue", serviceControlQueue);
             }
 
             config.EnableFeature<HeartbeatsFeature>();
