@@ -37,10 +37,7 @@
                 settings.Set("NServiceBus.Heartbeat.Ttl", timeToLive.Value);
             }
 
-            if (settings.TryGet<ManifestItems>(out var manifest))
-            {
-                manifest.Add("heartbeatsQueue", serviceControlQueue);
-            }
+            settings.AddStartupDiagnosticsSection("Manifest-HearbeatsQueue", serviceControlQueue);
 
             config.EnableFeature<HeartbeatsFeature>();
         }
