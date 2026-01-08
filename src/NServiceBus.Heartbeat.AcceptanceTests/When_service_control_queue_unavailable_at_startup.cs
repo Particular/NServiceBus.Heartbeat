@@ -15,31 +15,25 @@
             var testContext = await Scenario.Define<Context>()
                 .WithEndpoint<EndpointWithMissingSCQueue>(b => b
                     .CustomConfig((busConfig, context) => busConfig
-                        .DefineCriticalErrorAction((_, __) =>
+                        .DefineCriticalErrorAction((errorContext, __) =>
                         {
-                            context.CriticalExceptionReceived = true;
+                            context.MarkAsFailed(errorContext.Exception);
                             return Task.CompletedTask;
                         })))
+                .Done(c => c.EndpointsStarted)
                 .Run();
 
             Assert.Multiple(() =>
             {
-                Assert.That(testContext.CriticalExceptionReceived, Is.False);
                 Assert.That(testContext.Logs.Any(x => x.Message.Contains("Unable to register endpoint startup with ServiceControl.")), Is.True);
             });
         }
 
         class EndpointWithMissingSCQueue : EndpointConfigurationBuilder
         {
-            public EndpointWithMissingSCQueue()
-            {
-                EndpointSetup<DefaultServer>(c => c.SendHeartbeatTo(new string(Path.GetInvalidPathChars())));
-            }
+            public EndpointWithMissingSCQueue() => EndpointSetup<DefaultServer>(c => c.SendHeartbeatTo(new string(Path.GetInvalidPathChars())));
         }
 
-        class Context : ScenarioContext
-        {
-            public bool CriticalExceptionReceived { get; set; }
-        }
+        class Context : ScenarioContext;
     }
 }
