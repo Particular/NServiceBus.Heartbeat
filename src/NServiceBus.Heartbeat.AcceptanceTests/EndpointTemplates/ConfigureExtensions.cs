@@ -1,50 +1,40 @@
-﻿namespace NServiceBus.AcceptanceTests.EndpointTemplates
+namespace NServiceBus.AcceptanceTests.EndpointTemplates;
+
+using System.Threading.Tasks;
+using AcceptanceTesting.Support;
+using NServiceBus.Heartbeat.AcceptanceTests;
+using Configuration.AdvancedExtensibility;
+using Transport;
+
+public static class ConfigureExtensions
 {
-    using NServiceBus.Heartbeat.AcceptanceTests;
-    using System.Threading.Tasks;
-    using NServiceBus.AcceptanceTesting.Support;
-    using NServiceBus.Configuration.AdvancedExtensibility;
-    using Microsoft.Extensions.DependencyInjection;
-    using NServiceBus.Transport;
+    public static RoutingSettings ConfigureRouting(this EndpointConfiguration configuration) =>
+        new(configuration.GetSettings());
 
-    public static class ConfigureExtensions
+    // The acceptance testing framework does not expose transport definition access from endpoint setup.
+    public static TransportDefinition ConfigureTransport(this EndpointConfiguration configuration) =>
+        configuration.GetSettings().Get<TransportDefinition>();
+
+    public static TTransportDefinition ConfigureTransport<TTransportDefinition>(
+        this EndpointConfiguration configuration)
+        where TTransportDefinition : TransportDefinition =>
+        (TTransportDefinition)configuration.GetSettings().Get<TransportDefinition>();
+
+    public static async Task DefineTransport(this EndpointConfiguration config, RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointCustomizationConfiguration)
     {
-        public static async Task DefineTransport(this EndpointConfiguration config, RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointCustomizationConfiguration)
+        if (config.GetSettings().HasSetting<TransportDefinition>())
         {
-            if (config.GetSettings().HasSetting<TransportDefinition>())
-            {
-                return;
-            }
-            var transportConfiguration = new ConfigureEndpointLearningTransport();
-            await transportConfiguration.Configure(config);
-            runDescriptor.OnTestCompleted(_ => transportConfiguration.Cleanup());
+            return;
         }
+        var transportConfiguration = new ConfigureEndpointLearningTransport();
+        await transportConfiguration.Configure(config);
+        runDescriptor.OnTestCompleted(_ => transportConfiguration.Cleanup());
+    }
 
-        public static async Task DefinePersistence(this EndpointConfiguration config, RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointCustomizationConfiguration)
-        {
-            var persistenceConfiguration = new ConfigureEndpointAcceptanceTestingPersistence();
-            await persistenceConfiguration.Configure(config);
-            runDescriptor.OnTestCompleted(_ => persistenceConfiguration.Cleanup());
-        }
-
-        public static void RegisterComponentsAndInheritanceHierarchy(this EndpointConfiguration builder, RunDescriptor runDescriptor)
-        {
-            builder.RegisterComponents(r => { RegisterInheritanceHierarchyOfContextOnContainer(runDescriptor, r); });
-        }
-
-        static void RegisterInheritanceHierarchyOfContextOnContainer(RunDescriptor runDescriptor, IServiceCollection r)
-        {
-            var type = runDescriptor.ScenarioContext.GetType();
-            while (type != typeof(object))
-            {
-                r.AddSingleton(type, runDescriptor.ScenarioContext);
-                type = type.BaseType;
-            }
-        }
-
-        public static TTransportDefinition ConfigureTransport<TTransportDefinition>(
-            this EndpointConfiguration configuration)
-            where TTransportDefinition : TransportDefinition =>
-            (TTransportDefinition)configuration.GetSettings().Get<TransportDefinition>();
+    public static async Task DefinePersistence(this EndpointConfiguration config, RunDescriptor runDescriptor, EndpointCustomizationConfiguration endpointCustomizationConfiguration)
+    {
+        var persistenceConfiguration = new ConfigureEndpointAcceptanceTestingPersistence();
+        await persistenceConfiguration.Configure(config);
+        runDescriptor.OnTestCompleted(_ => persistenceConfiguration.Cleanup());
     }
 }
