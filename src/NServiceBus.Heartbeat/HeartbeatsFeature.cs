@@ -1,13 +1,15 @@
 ﻿namespace NServiceBus.Heartbeat
 {
     using System;
+    using System.Threading.Tasks;
     using Features;
     using Hosting;
-    using Transport;
     using Microsoft.Extensions.DependencyInjection;
+    using Transport;
 
     class HeartbeatsFeature : Feature
     {
+        readonly ThroughputTracker throughputTracker = new();
         protected override void Setup(FeatureConfigurationContext context)
         {
             if (!context.Settings.TryGet("NServiceBus.Heartbeat.Interval", out TimeSpan interval))
@@ -20,6 +22,11 @@
             }
 
             var destinationQueue = context.Settings.Get<string>("NServiceBus.Heartbeat.Queue");
+            context.Pipeline.OnReceivePipelineCompleted((completed, ct) =>
+            {
+                throughputTracker.RecordMessage(completed);
+                return Task.CompletedTask;
+            });
 
             context.RegisterStartupTask(b =>
             {
@@ -32,7 +39,8 @@
                     backend,
                     context.Settings.EndpointName(),
                     interval,
-                    ttl);
+                    ttl,
+                    throughputTracker);
             });
         }
     }

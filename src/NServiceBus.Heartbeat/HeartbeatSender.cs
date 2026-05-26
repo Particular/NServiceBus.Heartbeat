@@ -1,6 +1,7 @@
 ﻿namespace NServiceBus.Heartbeat
 {
     using System;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Features;
@@ -11,7 +12,7 @@
 
     class HeartbeatSender : FeatureStartupTask, IDisposable
     {
-        public HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo, ServiceControlBackend backend, string endpointName, TimeSpan interval, TimeSpan timeToLive)
+        public HeartbeatSender(IMessageDispatcher dispatcher, HostInformation hostInfo, ServiceControlBackend backend, string endpointName, TimeSpan interval, TimeSpan timeToLive, ThroughputTracker throughputTracker)
         {
             this.dispatcher = dispatcher;
             this.hostInfo = hostInfo;
@@ -19,6 +20,7 @@
             this.endpointName = endpointName;
             this.interval = interval;
             this.timeToLive = timeToLive;
+            this.throughputTracker = throughputTracker;
         }
 
         public void Dispose() => stopSendingTokenSource?.Dispose();
@@ -45,9 +47,29 @@
                 {
                     await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
 
-                    var message = new EndpointHeartbeat { ExecutedAt = DateTime.UtcNow, EndpointName = endpointName, Host = hostInfo.DisplayName, HostId = hostInfo.HostId };
+                    var heartbeatMessage = new EndpointHeartbeat
+                    {
+                        ExecutedAt = DateTime.UtcNow,
+                        EndpointName = endpointName,
+                        Host = hostInfo.DisplayName,
+                        HostId = hostInfo.HostId,
+                    };
 
-                    await backend.Send(message, timeToLive, dispatcher, cancellationToken).ConfigureAwait(false);
+                    await backend.Send(heartbeatMessage, timeToLive, dispatcher, cancellationToken).ConfigureAwait(false);
+
+                    var throughput = throughputTracker.ReadThroughput();
+                    if (throughput.Any(x => x.Value > 0))
+                    {
+                        var throughputMessage = new EndpointThroughput
+                        {
+                            EndpointName = endpointName,
+                            Host = hostInfo.DisplayName,
+                            HostId = hostInfo.HostId,
+                            Throughput = throughput
+                        };
+
+                        await backend.Send(throughputMessage, timeToLive, dispatcher, cancellationToken).ConfigureAwait(false);
+                    }
                 }
                 catch (OperationCanceledException ex) when (cancellationToken.IsCancellationRequested)
                 {
@@ -114,6 +136,7 @@
         readonly ServiceControlBackend backend;
         readonly TimeSpan interval;
         readonly TimeSpan timeToLive;
+        readonly ThroughputTracker throughputTracker;
         readonly string endpointName;
 
         static readonly TimeSpan registrationRetryInterval = TimeSpan.FromMinutes(1);
