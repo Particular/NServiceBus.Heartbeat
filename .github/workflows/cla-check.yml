@@ -7,19 +7,21 @@ on:
 permissions:
   checks: read
 
+defaults:                                                                                                                                                                                                                                  
+  run:                                                                                                                                                                                                                                     
+     shell: bash  
+
 jobs:
   retrigger-stuck-cla-check:
     if: github.event.check_run.name == 'license/cla'
     runs-on: ubuntu-latest
     steps:
       - name: Wait before checking
-        shell: bash
         run: sleep 120
 
       - name: Check and retrigger CLA check
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash  
         run: |
           REPO="${{ github.repository }}"
           OWNER="${REPO%%/*}"
