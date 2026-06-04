@@ -1,0 +1,63 @@
+name: CLA Check Retrigger
+
+on:
+  check_run:
+    types: [created]
+
+permissions:
+  checks: read
+
+defaults:                                                                                                                                                                                                                                  
+  run:                                                                                                                                                                                                                                     
+     shell: bash  
+
+jobs:
+  retrigger-stuck-cla-check:
+    if: github.event.check_run.name == 'license/cla'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait before checking
+        run: sleep 120
+
+      - name: Check and retrigger CLA check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO="${{ github.repository }}"
+          OWNER="${REPO%%/*}"
+          REPO_NAME="${REPO#*/}"
+          PR="${{ github.event.check_run.pull_requests[0].number }}"
+          HEAD_SHA="${{ github.event.check_run.head_sha }}"
+
+          if [ -z "$PR" ] || [ "$PR" = "null" ]; then
+            echo "No pull request associated with this check run, skipping"
+            exit 0
+          fi
+
+          CHECK=$(gh api "repos/${REPO}/commits/${HEAD_SHA}/check-runs?per_page=100" \
+            --jq "[.check_runs[] | select(.name == \"license/cla\")] | sort_by(.created_at) | reverse | .[0]")
+
+          if [ -z "$CHECK" ] || [ "$CHECK" = "null" ]; then
+            echo "No license/cla check found, skipping"
+            exit 0
+          fi
+
+          STATUS=$(echo "$CHECK" | jq -r '.status')
+          CONCLUSION=$(echo "$CHECK" | jq -r '.conclusion // "none"')
+
+          echo "PR #${PR}: license/cla status=${STATUS} conclusion=${CONCLUSION}"
+
+          if [ "$STATUS" = "completed" ] && [ "$CONCLUSION" = "success" ]; then
+            echo "Already passed, nothing to do"
+            exit 0
+          fi
+
+          echo "Check not passed, retriggering via cla-assistant.io..."
+          HTTP_CODE=$(curl -sS -o /dev/null -w "%{http_code}" \
+            "https://cla-assistant.io/check/${OWNER}/${REPO_NAME}?pullRequest=${PR}")
+
+          if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 400 ]; then
+            echo "Retriggered successfully (HTTP ${HTTP_CODE})"
+          else
+            echo "::warning::Failed to retrigger (HTTP ${HTTP_CODE})"
+          fi
